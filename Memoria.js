@@ -25,15 +25,7 @@ export class Memoria {
         }
     }
 
-    get_t_KiB_stack() {
-        return this.t_KiB_stack;
-    }
-
-    get_t_KiB_heap() {
-        return this.t_KiB_heap;
-    }
-
-    get_t_B_header() {
-        return this.t_B_header;
-    }
+    get t_KiB_stack()   { return this.t_KiB_stack; }
+    get t_KiB_heap()    { return this.t_KiB_heap; }
+    get t_B_header()    { return this.t_B_header; }
 }

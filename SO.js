@@ -16,15 +16,9 @@ export class SO {
     constructor(memoria, programas) {
         this.memoria    = memoria;
         this.programas  = this.cargarProgramas(
-            memoria.get_t_B_header(), 
+            memoria.t_B_header, 
             programas
         );
-    }
-
-    encender() {
-        this.programas.forEach(programa => {
-            console.log('Tamaño: ' + programa.get_t_disco());
-        });
     }
 
     cargarProgramas(t_B_header, programas) {
@@ -36,6 +30,12 @@ export class SO {
         });
 
         return programasCargados;
+    }
+
+    encender() {
+        this.programas.forEach(programa => {
+            console.log('Tamaño: ' + programa.get_t_disco());
+        });
     }
 }
 

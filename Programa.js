@@ -14,6 +14,6 @@ export function Programa (nombre, t_B_text, t_B_data, t_B_bss, t_B_header) {
     this.t_disco    = this.ct_disco.reduce((acc, v_act) => acc + v_act, 0);
 }
 
-Programa.prototype.get_t_disco = function () {
-    return this.t_disco;
-}
+Programa.prototype = {
+    get_t_disco: function () { return this.t_disco; }
+};

@@ -17,7 +17,5 @@ export class Proceso {
         this.t_proceso = this.c_proceso.reduce((acc, v_act) => acc + v_act, 0);
     }
 
-    get_t_proceso() {
-        return this.t_proceso;
-    }
+    get t_proceso() { return this.t_proceso; }
 }
