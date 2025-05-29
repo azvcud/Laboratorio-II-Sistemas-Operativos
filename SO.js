@@ -1,18 +1,3 @@
-/*
-t:      Tamaño
-ts:     Tiempo
-ct:     Contenido
-co:     Contador
-ca:     Cantidad
-acc:    Acumulador
-v_act:  Valor actual
-v:      Valor
-u_dev:  Unidad derivada
-o:      Opción
-m:      Multiplicador
-b:      Interruptor (Booleano)
-*/
-
 import { Programa } from './Programa.js';
 import { Proceso } from './Proceso.js';
 import { Memoria } from './Memoria.js';
@@ -22,10 +7,11 @@ import { Estrategia_dinamica } from './Estrategia_dinamica.js';
 import { GestorMemoria } from './GestorMemoria.js';
 
 export class SO {
-    constructor(memoria, programas) {
-        this.memoria    = memoria;
-        this.programas  = this.cargarProgramas(
-            memoria.t_B_header, 
+    constructor(t_MiB_SO, gestorMemoria, programas) {
+        this.t_MiB_SO       = t_MiB_SO;
+        this.gestorMemoria  = gestorMemoria;
+        this.programas      = this.cargarProgramas(
+            gestorMemoria.memoria.t_B_header, 
             programas
         );
     }
@@ -42,9 +28,16 @@ export class SO {
     }
 
     encender() {
-        this.programas.forEach(programa => {
-            console.log('Tamaño: ' + programa.t_disco);
-        });
+        gestorMemoria.cargarSO(this.t_MiB_SO);
+        gestorMemoria.particionarMemoria();
+
+        console.log(this.programas);
+        console.log(gestorMemoria.obtenerEstadisticas());
+        console.log(gestorMemoria.memoria);
+        console.log('Memoria ocupada en MiB: ' + gestorMemoria.memoria.get_sum_t_c_ram());
+        console.log('Memoria disponible en MiB: ' + gestorMemoria.memoria.get_t_disp_ram('B'));
+        console.log(gestorMemoria.memoria.get_pos_c_ram('DEC'));
+        console.log(gestorMemoria.memoria.get_pos_c_ram('HEX'));
     }
 }
 
@@ -78,13 +71,12 @@ const particiones = [
     { t_MiB_particion: 4,   ca_particion: 2 } 
 ];
 
-const gestorMemoria         = new GestorMemoria(ts_procesos);
+const gestorMemoria         = new GestorMemoria(new Memoria(16, 64, 128, 767));
 const estrategia_t_fijo     = new Estrategia_t_fijo(1);
 const estrategia_t_variable = new Estrategia_t_variable(particiones, 'peor');
 const estrategia_dinamica   = new Estrategia_dinamica('mejor');
 
-gestorMemoria.estrategia_gestor = estrategia_t_variable;
-console.log(gestorMemoria.obtenerEstadisticas());
+gestorMemoria.estrategia_gestor = estrategia_dinamica;
 
-const windows = new SO(new Memoria(16, 64, 128, 767), programas);
+const windows = new SO(1, gestorMemoria, programas);
 windows.encender();
