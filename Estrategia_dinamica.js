@@ -11,6 +11,10 @@ export class Estrategia_dinamica {
         ];
     }
 
+    gestionarMemoriaProcesos(memoria, procesos) {
+
+    }
+
     particionarMemoria(memoria) {
         const t_B_disp_ram = memoria.get_t_disp_ram('B');
         

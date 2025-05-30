@@ -1,19 +1,22 @@
-import { Programa } from './Programa.js';
 import { Proceso } from './Proceso.js';
-import { Memoria } from './Memoria.js';
-import { Estrategia_t_fijo } from './Estrategia_t_fijo.js';
-import { Estrategia_t_variable } from './Estrategia_t_variable.js';
-import { Estrategia_dinamica } from './Estrategia_dinamica.js';
-import { GestorMemoria } from './GestorMemoria.js';
+
+const reloj = {
+    tiempo  : (ms)      => new Promise(resolve => setTimeout(resolve, ms)),
+    ciclo   : (tick)    => tick.co_ts++
+}
 
 export class SO {
-    constructor(t_MiB_SO, gestorMemoria, programas) {
+    static BYTES_EN_1KiB = 1024;
+    
+    constructor(t_MiB_SO, gestorMemoria, programas, procesos) {
         this.t_MiB_SO       = t_MiB_SO;
         this.gestorMemoria  = gestorMemoria;
         this.programas      = this.cargarProgramas(
             gestorMemoria.memoria.t_B_header, 
             programas
         );
+        this.procesos    = procesos;
+        this.tick        = { co_ts: 0 };
     }
 
     cargarProgramas(t_B_header, programas) {
@@ -28,55 +31,49 @@ export class SO {
     }
 
     encender() {
-        gestorMemoria.cargarSO(this.t_MiB_SO);
-        gestorMemoria.particionarMemoria();
+        this.gestorMemoria.cargarSO(this.t_MiB_SO);
+        this.gestorMemoria.particionarMemoria();
+        this.primerosDatos();
+        this.ejecutarProcesos(500);
+    }
 
+    async ejecutarProcesos(ms) {
+        const n_tiempos = this.procesos[0].ts_proceso.length;
+
+        while(this.tick.co_ts < n_tiempos) {
+            await reloj.tiempo(ms);
+            console.log('****************************************************************************');
+            console.log('Tiempo no. ' + (this.tick.co_ts + 1));
+            console.log('****************************************************************************');
+
+            const procesosCrear = this.procesos
+                .filter(proceso => proceso.ts_proceso[this.tick.co_ts] > -1)
+                .map(proceso => {
+                    const turnoProceso      = proceso.ts_proceso[this.tick.co_ts];
+                    const programaEjecutar  = this.programas[proceso.pid - 1];
+                    const t_B_stack         = this.gestorMemoria.memoria.t_KiB_stack * SO.BYTES_EN_1KiB;
+                    const t_B_heap          = this.gestorMemoria.memoria.t_KiB_heap * SO.BYTES_EN_1KiB;
+
+                    const [, t_B_text, t_B_data, t_B_bss] = programaEjecutar._ct_disco;
+
+                    return new Proceso(proceso.pid, turnoProceso, t_B_text, t_B_data,
+                        t_B_bss, t_B_stack, t_B_heap
+                    );
+                });
+            
+            console.log(procesosCrear);
+            this.gestorMemoria.procesos = procesosCrear;
+            reloj.ciclo(this.tick);
+        }
+    }
+
+    primerosDatos() {
         console.log(this.programas);
-        console.log(gestorMemoria.obtenerEstadisticas());
-        console.log(gestorMemoria.memoria);
-        console.log('Memoria ocupada en MiB: ' + gestorMemoria.memoria.get_sum_t_c_ram());
-        console.log('Memoria disponible en MiB: ' + gestorMemoria.memoria.get_t_disp_ram('B'));
-        console.log(gestorMemoria.memoria.get_pos_c_ram('DEC'));
-        console.log(gestorMemoria.memoria.get_pos_c_ram('HEX'));
+        console.log(this.gestorMemoria.obtenerEstadisticas());
+        console.log(this.gestorMemoria.memoria);
+        console.log('Memoria ocupada en MiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
+        console.log('Memoria disponible en MiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
+        console.log(this.gestorMemoria.memoria.get_pos_c_ram('DEC'));
+        console.log(this.gestorMemoria.memoria.get_pos_c_ram('HEX'));
     }
 }
-
-
-const programas = [
-    Programa.bind(null, 'Notepad', 19524, 12352, 1165),
-    Programa.bind(null, 'Word', 77539, 32680, 4100),
-    Programa.bind(null, 'Excel', 99542, 24245, 7577),
-    Programa.bind(null, 'AutoCAD', 115000, 123470, 1123),
-    Programa.bind(null, 'Calculadora', 12342, 1256, 1756),
-    Programa.bind(null, 'Discord', 525000, 3224000, 51000),
-    Programa.bind(null, 'Teams', 590000, 974000, 25000),
-    Programa.bind(null, 'MatLAB', 349000, 2150000, 1000)
-];
-
-const ts_procesos = [
-    [-1, -1, -1, -1,  2, -1],
-    [-1, -1, -1,  2, -1,  3],
-    [-1,  2, -1, -1,  4,  0],
-    [ 1,  0, -1,  1, -1,  5],
-    [-1, -1,  1,  0, -1,  4],
-    [-1, -1, -1,  3,  1,  1],
-    [-1, -1, -1, -1, -1,  2],
-    [ 2,  1, -1,  4,  3, -1]
-];
-
-const particiones = [
-    { t_MiB_particion: 0.5, ca_particion: 2 },
-    { t_MiB_particion: 1,   ca_particion: 2 },
-    { t_MiB_particion: 2,   ca_particion: 2 },
-    { t_MiB_particion: 4,   ca_particion: 2 } 
-];
-
-const gestorMemoria         = new GestorMemoria(new Memoria(16, 64, 128, 767));
-const estrategia_t_fijo     = new Estrategia_t_fijo(1);
-const estrategia_t_variable = new Estrategia_t_variable(particiones, 'peor');
-const estrategia_dinamica   = new Estrategia_dinamica('mejor');
-
-gestorMemoria.estrategia_gestor = estrategia_dinamica;
-
-const windows = new SO(1, gestorMemoria, programas);
-windows.encender();

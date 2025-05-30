@@ -30,6 +30,10 @@ export class Estrategia_t_variable {
         return memoria.c_ram;
     }
 
+    gestionarMemoriaProcesos(memoria, procesos) {
+
+    }
+
     get_t_particiones(u_dev) {
         let m_t_particion = 1;
 

@@ -1,11 +1,10 @@
 export class Proceso {
-    static co_pid = 0;
-
-    constructor(t_text, t_data, t_bss, t_heap, t_stack) {
-        this.v_pid     = ++Proceso.co_pid;
-        this.c_proceso = [t_text, t_data, t_bss, t_heap, t_stack];
-        this.t_proceso = this.c_proceso.reduce((acc, v_act) => acc + v_act, 0);
+    constructor(pid, turno, t_text, t_data, t_bss, t_stack, t_heap) {
+        this.pid        = pid;
+        this.turno      = turno;
+        this.c_proceso  = [t_text, t_data, t_bss, t_stack, t_heap];
+        this._t_proceso = this.c_proceso.reduce((acc, v_act) => acc + v_act, 0);
     }
 
-    get t_proceso() { return this.t_proceso; }
+    get t_proceso() { return this._t_proceso; }
 }

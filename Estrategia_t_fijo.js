@@ -25,6 +25,10 @@ export class Estrategia_t_fijo {
         return memoria.c_ram;
     }
 
+    gestionarMemoriaProcesos(memoria, procesos) {
+
+    }
+
     get_t_particion(u_dev) {
         switch(u_dev) {
             case 'MiB': return this.t_MiB_particion;
