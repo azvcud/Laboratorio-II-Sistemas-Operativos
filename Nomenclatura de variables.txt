@@ -10,6 +10,7 @@ hex:    Hexadecimal
 m:      Multiplicador
 n:      Número
 o:      Opción
+proc:   Proceso
 pos:    Posición(es)
 repr:   Representación
 sum:    Suma/Sumatoria

@@ -61,9 +61,13 @@ export class SO {
                     );
                 });
             
-            console.log(procesosCrear);
             this.gestorMemoria.procesos = procesosCrear;
+            this.gestorMemoria.gestionarMemoriaProcesos();
             reloj.ciclo(this.tick);
+
+            console.log(this.gestorMemoria.memoria.c_ram);
+            console.log('Memoria ocupada en MiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
+            console.log('Memoria disponible en MiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
         }
     }
 
