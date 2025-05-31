@@ -5,11 +5,13 @@ b:      Interruptor (Booleano)
 ct:     Contenido
 co:     Contador
 ca:     Cantidad
+dif:    Diferencia
 disp:   Disponible
 hex:    Hexadecimal
 m:      Multiplicador
 n:      Número
 o:      Opción
+p:      Positivo(a)
 proc:   Proceso
 pos:    Posición(es)
 repr:   Representación

@@ -59,7 +59,7 @@ export class Estrategia_t_fijo {
     insertarProcesoMemoria(memoria, proceso) {
         const i_espacioDisponible   = memoria.c_ram.findIndex(espacio => espacio[1] === null);
 
-        if(i_espacioDisponible == -1)  
+        if(i_espacioDisponible === -1)  
         { console.warn('No hay suficiente espacio de memoria.'); }
         else                            
         { memoria.c_ram[i_espacioDisponible][1] = proceso; }

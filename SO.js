@@ -66,8 +66,8 @@ export class SO {
             reloj.ciclo(this.tick);
 
             console.log(this.gestorMemoria.memoria.c_ram);
-            console.log('Memoria ocupada en MiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
-            console.log('Memoria disponible en MiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
+            console.log('Memoria ocupada en KiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
+            console.log('Memoria disponible en KiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
         }
     }
 
@@ -75,8 +75,8 @@ export class SO {
         console.log(this.programas);
         console.log(this.gestorMemoria.obtenerEstadisticas());
         console.log(this.gestorMemoria.memoria);
-        console.log('Memoria ocupada en MiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
-        console.log('Memoria disponible en MiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
+        console.log('Memoria ocupada en KiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
+        console.log('Memoria disponible en KiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
         console.log(this.gestorMemoria.memoria.get_pos_c_ram('DEC'));
         console.log(this.gestorMemoria.memoria.get_pos_c_ram('HEX'));
     }

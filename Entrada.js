@@ -18,14 +18,14 @@ const programas = [
 ];
 
 const procesos = [
-    { pid: 1, ts_proceso: [-1, -1, -1, -1,  2, -1]},
-    { pid: 2, ts_proceso: [-1, -1, -1,  2, -1,  3]},
-    { pid: 3, ts_proceso: [-1,  2, -1, -1,  4,  0]},
-    { pid: 4, ts_proceso: [ 1,  0, -1,  1, -1,  5]},
-    { pid: 5, ts_proceso: [-1, -1,  1,  0, -1,  4]},
-    { pid: 6, ts_proceso: [-1, -1, -1,  3,  1,  1]},
-    { pid: 7, ts_proceso: [-1, -1, -1, -1, -1,  2]},
-    { pid: 8, ts_proceso: [ 2,  1, -1,  4,  3, -1]}
+    { pid: 1, ts_proceso: [-1, -1, -1, -1,  1, -1]},
+    { pid: 2, ts_proceso: [-1, -1, -1,  2, -1,  2]},
+    { pid: 3, ts_proceso: [-1,  1, -1, -1,  2,  0]},
+    { pid: 4, ts_proceso: [ 1,  0, -1,  1, -1,  4]},
+    { pid: 5, ts_proceso: [-1, -1,  1,  0, -1,  3]},
+    { pid: 6, ts_proceso: [-1, -1, -1,  3,  0,  0]},
+    { pid: 7, ts_proceso: [-1, -1, -1, -1, -1,  1]},
+    { pid: 8, ts_proceso: [ 2,  0, -1,  4,  0, -1]}
 ];
 
 const particiones = [
@@ -37,10 +37,10 @@ const particiones = [
 
 const gestorMemoria         = new GestorMemoria(new Memoria(16, 64, 128, 767));
 const estrategia_t_fijo     = new Estrategia_t_fijo(1);
-const estrategia_t_variable = new Estrategia_t_variable(particiones, 'peor');
+const estrategia_t_variable = new Estrategia_t_variable(particiones, 'mejor');
 const estrategia_dinamica   = new Estrategia_dinamica('mejor');
 
-gestorMemoria.estrategia_gestor = estrategia_t_fijo;
+gestorMemoria.estrategia_gestor = estrategia_t_variable;
 
 const windows = new SO(1, gestorMemoria, programas, procesos);
 windows.encender();
