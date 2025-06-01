@@ -9,7 +9,7 @@ import { GestorMemoria } from './GestorMemoria.js';
 const programas = [
     Programa.bind(null, 'Notepad', 19524, 12352, 1165),
     Programa.bind(null, 'Word', 77539, 32680, 4100),
-    Programa.bind(null, 'Excel', 99542, 24245, 7577),
+    Programa.bind(null, 'Excel', 99542, 24245, 7557),
     Programa.bind(null, 'AutoCAD', 115000, 123470, 1123),
     Programa.bind(null, 'Calculadora', 12342, 1256, 1756),
     Programa.bind(null, 'Discord', 525000, 3224000, 51000),
@@ -40,7 +40,8 @@ const estrategia_t_fijo     = new Estrategia_t_fijo(1);
 const estrategia_t_variable = new Estrategia_t_variable(particiones, 'mejor');
 const estrategia_dinamica   = new Estrategia_dinamica('mejor');
 
-gestorMemoria.estrategia_gestor = estrategia_t_variable;
+estrategia_dinamica.b_compactacion = true;
+gestorMemoria.estrategia_gestor = estrategia_dinamica;
 
 const windows = new SO(1, gestorMemoria, programas, procesos);
 windows.encender();

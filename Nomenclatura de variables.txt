@@ -15,6 +15,7 @@ p:      Positivo(a)
 proc:   Proceso
 pos:    Posición(es)
 repr:   Representación
+sig:    Siguiente
 sum:    Suma/Sumatoria
 t:      Tamaño
 ts:     Tiempo

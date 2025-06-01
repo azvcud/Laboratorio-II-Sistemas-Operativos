@@ -31,9 +31,8 @@ export class Estrategia_t_variable {
     }
 
     gestionarMemoriaProcesos(memoria, procesos) {
-        console.log(procesos);
-
         memoria = this.limpiarMemoria(memoria, procesos);
+        
         procesos
             .sort((proc_menor, proc_mayor) => proc_menor.turno - proc_mayor.turno)
             .forEach(proceso => {
