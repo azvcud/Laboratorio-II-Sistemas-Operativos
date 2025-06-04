@@ -1,0 +1,99 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.contenedor {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.izquierda {
+  width: 60%;
+}
+
+.derecha {
+  width: 38%;
+}
+
+.tabla {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: auto;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  max-height: 350px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: center;
+  font-size: 0.85em;
+}
+
+th {
+  background-color: #007BFF;
+  color: white;
+}
+
+/* Colores por estado */
+.estado-libre {
+  background-color: #e2e3e5;
+  color: #41464b;
+}
+
+.estado-llena {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+/* Tabla de procesos en el tiempo estilo matriz */
+.procesos-tiempo-table td {
+  height: 30px;
+  min-width: 40px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+/* Estados visuales */
+.estado-verde {
+  background-color: #28a745;
+  color: white;
+}
+
+.estado-rojo {
+  background-color: #dc3545;
+  color: white;
+}
+/* Contenedor expandido para tabla de memoria */
+.memoria-expandida {
+  max-height: 600px; /* Ajusta según el tamaño de tu pantalla */
+  overflow-y: auto;
+}
+
+/* Estilo general para tablas si deseas fijar tamaños uniformes */
+.tabla table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th, .tabla td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 14px;
+}
