@@ -3,8 +3,9 @@ export class Estrategia_t_fijo {
     static BYTES_EN_1MiB    = 1048576;
     static BITS_EN_1MiB     = 8388608;
 
-    constructor(t_MiB_particion) {
+    constructor(t_MiB_particion, salida) {
         this.t_MiB_particion = t_MiB_particion;
+        this.salida          = salida;
     }
 
     obtenerEstadisticas() {
@@ -33,9 +34,9 @@ export class Estrategia_t_fijo {
             .sort((proc_menor, proc_mayor) => proc_menor.turno - proc_mayor.turno)
             .forEach(proceso => {
                 if(proceso.t_proceso > t_B_particion) 
-                { console.warn(`⚠️ Advertencia: El proceso PID ${proceso.pid} (${proceso.t_proceso} B) es demasiado grande para una partición de memoria (${t_B_particion} B). No se pudo insertar.`)}
+                { this.salida.interfazWeb(`⚠️ [ADVERTENCIA] El proceso PID ${proceso.pid} (${proceso.t_proceso} B) es demasiado grande para una partición de memoria (${t_B_particion} B). No se pudo insertar.`)}
                 else if(proceso.turno === 0)
-                { console.log(`ℹ️ Info: El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
+                { this.salida.interfazWeb(`ℹ️ [INFO] El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
                 else
                 { memoria = this.insertarProcesoMemoria(memoria, proceso); }
             });
@@ -60,7 +61,7 @@ export class Estrategia_t_fijo {
         const i_espacioDisponible   = memoria.c_ram.findIndex(espacio => espacio[1] === null);
 
         if(i_espacioDisponible === -1)  
-        { console.warn('No hay suficiente espacio de memoria.'); }
+        { this.salida.interfazWeb('⛔ [ERROR] No hay suficiente espacio de memoria.'); }
         else                            
         { memoria.c_ram[i_espacioDisponible][1] = proceso; }
 

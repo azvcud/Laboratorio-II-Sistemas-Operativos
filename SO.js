@@ -8,7 +8,7 @@ const reloj = {
 export class SO {
     static BYTES_EN_1KiB = 1024;
     
-    constructor(t_MiB_SO, gestorMemoria, programas, procesos) {
+    constructor(t_MiB_SO, gestorMemoria, programas, procesos, salida, ms_retardo) {
         this.t_MiB_SO       = t_MiB_SO;
         this.gestorMemoria  = gestorMemoria;
         this.programas      = this.cargarProgramas(
@@ -17,6 +17,8 @@ export class SO {
         );
         this.procesos    = procesos;
         this.tick        = { co_ts: 0 };
+        this.salida      = salida;
+        this.ms_retardo  = ms_retardo;
     }
 
     cargarProgramas(t_B_header, programas) {
@@ -34,7 +36,7 @@ export class SO {
         this.gestorMemoria.cargarSO(this.t_MiB_SO);
         this.gestorMemoria.particionarMemoria();
         this.primerosDatos();
-        this.ejecutarProcesos(500);
+        this.ejecutarProcesos(this.ms_retardo);
     }
 
     async ejecutarProcesos(ms) {
@@ -45,6 +47,7 @@ export class SO {
             console.log('****************************************************************************');
             console.log('Tiempo no. ' + (this.tick.co_ts + 1));
             console.log('****************************************************************************');
+            this.salida.interfazWeb('ℹ️ [INFO] Tiempo no. ' + (this.tick.co_ts + 1));
 
             const procesosCrear = this.procesos
                 .filter(proceso => proceso.ts_proceso[this.tick.co_ts] > -1)
@@ -65,7 +68,10 @@ export class SO {
             this.gestorMemoria.gestionarMemoriaProcesos();
             reloj.ciclo(this.tick);
 
+            this.actualizarInterfaz(procesosCrear);
             console.log(this.gestorMemoria.memoria.c_ram);
+            console.log(this.gestorMemoria.memoria.get_pos_c_ram('DEC'));
+            console.log(this.gestorMemoria.memoria.get_pos_c_ram('HEX'));
             console.log('Memoria ocupada en KiB: ' + this.gestorMemoria.memoria.get_sum_t_c_ram());
             console.log('Memoria disponible en KiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
         }
@@ -79,5 +85,28 @@ export class SO {
         console.log('Memoria disponible en KiB: ' + this.gestorMemoria.memoria.get_t_disp_ram('B'));
         console.log(this.gestorMemoria.memoria.get_pos_c_ram('DEC'));
         console.log(this.gestorMemoria.memoria.get_pos_c_ram('HEX'));
+    }
+
+    actualizarInterfaz(procesosCrear) {
+        this.salida.tablaMemoria(
+            this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
+            this.gestorMemoria.memoria.get_pos_c_ram('HEX'),
+            this.gestorMemoria.memoria.c_ram,
+        );
+
+        this.salida.metricasEspacio(
+            this.gestorMemoria.memoria.get_sum_t_c_ram(),
+            this.gestorMemoria.memoria.get_t_disp_ram('B')
+        );
+
+        this.salida.listaProcesos(
+            procesosCrear
+        );
+
+        this.salida.tablaFragmentos(
+            this.gestorMemoria.memoria.c_ram,
+            this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
+            this.gestorMemoria.memoria.get_pos_c_ram('HEX')
+        );
     }
 }

@@ -3,9 +3,10 @@ export class Estrategia_t_variable {
     static BYTES_EN_1MiB    = 1048576;
     static BITS_EN_1MiB     = 8388608;
 
-    constructor(t_MiB_particiones, o_ajuste) {
+    constructor(t_MiB_particiones, o_ajuste, salida) {
         this.t_MiB_particiones  = t_MiB_particiones;
         this.o_ajuste           = o_ajuste;
+        this.salida             = salida;
     }
 
     obtenerEstadisticas() {
@@ -37,12 +38,12 @@ export class Estrategia_t_variable {
             .sort((proc_menor, proc_mayor) => proc_menor.turno - proc_mayor.turno)
             .forEach(proceso => {
                 if(proceso.turno === 0)
-                { console.log(`ℹ️ Info: El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
+                { this.salida.interfazWeb(`ℹ️ [INFO] El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
                 else
                 { switch(this.o_ajuste) {
                     case 'primer':  memoria = this.insertarPrimerAjuste(memoria, proceso);    break;
                     case 'peor':    memoria = this.insertarPeorAjuste(memoria, proceso);      break;
-                    case 'mejor':   this.insertarMejorAjuste(memoria, proceso);     break;
+                    case 'mejor':   this.insertarMejorAjuste(memoria, proceso);               break;
                 }}
             });
         
@@ -67,7 +68,7 @@ export class Estrategia_t_variable {
             .findIndex(particion => particion[0] >= proceso.t_proceso && particion[1] === null);
         
         if(i_espacioDisponible === -1)
-        { console.warn('No hay suficiente espacio de memoria.'); }
+        { this.salida.interfazWeb('⛔ [ERROR] No hay suficiente espacio de memoria.'); }
         else
         { memoria.c_ram[i_espacioDisponible][1] = proceso; }        
 
@@ -86,9 +87,9 @@ export class Estrategia_t_variable {
         const esOcupable = max_t > proceso.t_proceso;
     
         if(i_espacioDisponible === -1)
-        { console.warn('No hay suficiente espacio de memoria.'); }
+        { this.salida.interfazWeb('⛔ [ERROR] No hay suficiente espacio de memoria.'); }
         else if(!esOcupable)
-        { console.warn(`⚠️ Advertencia: El proceso PID ${proceso.pid} (${proceso.t_proceso} B) es demasiado grande para una partición de memoria (${max_t} B). No se pudo insertar.`); }
+        { this.salida.interfazWeb(`⚠️ [ADVERTENCIA] El proceso PID ${proceso.pid} (${proceso.t_proceso} B) es demasiado grande para una partición de memoria (${max_t} B). No se pudo insertar.`); }
         else                            
         { memoria.c_ram[i_espacioDisponible][1] = proceso; }
 
@@ -106,7 +107,7 @@ export class Estrategia_t_variable {
             .findIndex(particion => (particion[0] - proceso.t_proceso) === dif_menor && particion[1] === null);
 
         if(i_espacioDisponible === -1)
-        { console.warn('No hay suficiente espacio de memoria.'); }
+        { this.salida.interfazWeb('⛔ [ERROR] No hay suficiente espacio de memoria.'); }
         else
         { memoria.c_ram[i_espacioDisponible][1] = proceso; }
                 

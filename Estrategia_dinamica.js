@@ -1,6 +1,7 @@
 export class Estrategia_dinamica {
-    constructor(o_ajuste) {
+    constructor(o_ajuste, salida) {
         this.o_ajuste           = o_ajuste;
+        this.salida             = salida;
         this._b_compactacion    = false;
     }
 
@@ -22,11 +23,10 @@ export class Estrategia_dinamica {
             .sort((proc_menor, proc_mayor) => proc_menor.turno - proc_mayor.turno)
             .forEach(proceso => {
                 if(proceso.turno === 0)
-                { console.log(`ℹ️ Info: El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
+                { this.salida.interfazWeb(`ℹ️ [INFO] El proceso PID ${proceso.pid} (${proceso.t_proceso} B) continúa en la memoria`); }
                 else
                 { memoria = this.insertarProcesoMemoria(memoria, proceso); }
             });
-
 
         return memoria.c_ram;
     }
@@ -42,7 +42,7 @@ export class Estrategia_dinamica {
             .findIndex(particion => (particion[0] - proceso.t_proceso) === dif_menor && particion[1] === null);
 
         if (i_espacioDisponible === -1)
-        { console.warn('No hay suficiente espacio en la memoria.'); }
+        { this.salida.interfazWeb('⛔ [ERROR] No hay suficiente espacio de memoria.'); }
         else
         {
             const t_igual = memoria.c_ram[i_espacioDisponible][1] === proceso.t_proceso;

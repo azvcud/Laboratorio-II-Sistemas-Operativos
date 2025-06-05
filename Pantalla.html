@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>4 Web Terminals</title>
+  <link rel="stylesheet" href="GUI.css">
+</head>
+<body>
+    <div class="grid-container">
+        <div class="terminal-wrapper">
+            <!-- COLUMNA IZQUIERDA: terminal + bottom panel -->
+            <div class="left-column">
+              <div class="bottom-panel">
+                <p>Generalidades del sistema operativo:</p>
+                <table class="log-table" id="tablaGeneralidades">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>MiB</th>
+                      <th>KiB</th>
+                      <th>Bytes</th>
+                    </tr>
+                  </thead>
+                  <tr>
+                    <td>RAM instalada</td>
+                    <td contenteditable="true">16</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Pila</td>
+                    <td></td>
+                    <td contenteditable="true">64</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Montículo</td>
+                    <td></td>
+                    <td contenteditable="true">128</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Encabezado EXE</td>
+                    <td></td>
+                    <td></td>
+                    <td contenteditable="true">767</td>
+                  </tr>
+                  <tr>
+                    <td>Sistema Operativo</td>
+                    <td contenteditable="true">1</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </table>
+              
+                <p>Lista de programas:</p>
+                <table class="log-table" id="tablaProgramas">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Tamaño en disco</th>
+                      <th>Tamaño de código</th>
+                      <th>Tamaño de datos inicializados</th>
+                      <th>Tamaños de datos sin inicializar</th>
+                    </tr>
+                  </thead>
+                    <tr>
+                      <td id="nombrePrograma1" contenteditable="true">Notepad</td>
+                      <td></td>
+                      <td contenteditable="true">19524</td>
+                      <td contenteditable="true">12352</td>
+                      <td contenteditable="true">1165</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma2" contenteditable="true">Word</td>
+                      <td></td>
+                      <td contenteditable="true">77539</td>
+                      <td contenteditable="true">32680</td>
+                      <td contenteditable="true">4100</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma3" contenteditable="true">Excel</td>
+                      <td></td>
+                      <td contenteditable="true">99542</td>
+                      <td contenteditable="true">24245</td>
+                      <td contenteditable="true">7557</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma4" contenteditable="true">AutoCAD</td>
+                      <td></td>
+                      <td contenteditable="true">115000</td>
+                      <td contenteditable="true">123470</td>
+                      <td contenteditable="true">1123</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma5" contenteditable="true">Calculadora</td>
+                      <td></td>
+                      <td contenteditable="true">12342</td>
+                      <td contenteditable="true">1256</td>
+                      <td contenteditable="true">1756</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma6" contenteditable="true">Discord</td>
+                      <td></td>
+                      <td contenteditable="true">525000</td>
+                      <td contenteditable="true">3224000</td>
+                      <td contenteditable="true">51000</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma7" contenteditable="true">Teams</td>
+                      <td></td>
+                      <td contenteditable="true">590000</td>
+                      <td contenteditable="true">974000</td>
+                      <td contenteditable="true">25000</td>
+                    </tr>
+                    <tr>
+                      <td id="nombrePrograma8" contenteditable="true">MatLAB</td>
+                      <td></td>
+                      <td contenteditable="true">349000</td>
+                      <td contenteditable="true">2150000</td>
+                      <td contenteditable="true">1000</td>
+                    </tr>
+                </table>
+                <button id="agregarPrograma">Agregar programa</button>
+                <button id="eliminarPrograma">Eliminar programa</button>
+
+                <p>Tiempos de ejecución de procesos:</p>
+                <table class="log-table" id="tablaTiemposProcesos">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>T1</th>
+                      <th>T2</th>
+                      <th>T3</th>
+                      <th>T4</th>
+                      <th>T5</th>
+                      <th>T6</th>
+                    </tr>
+                  </thead>
+                  <tr>
+                    <td id="tiempo1">p1</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">1</td>
+                    <td contenteditable="true"></td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo2">p2</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">2</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">2</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo3">p3</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">1</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">2</td>
+                    <td contenteditable="true">0</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo4">p4</td>
+                    <td contenteditable="true">1</td>
+                    <td contenteditable="true">0</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">1</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">4</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo5">p5</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">1</td>
+                    <td contenteditable="true">0</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">3</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo6">p6</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">3</td>
+                    <td contenteditable="true">0</td>
+                    <td contenteditable="true">0</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo7">p7</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">1</td>
+                  </tr>
+                  <tr>
+                    <td id="tiempo8">p8</td>
+                    <td contenteditable="true">2</td>
+                    <td contenteditable="true">0</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true">4</td>
+                    <td contenteditable="true">0</td>
+                    <td contenteditable="true"></td>
+                  </tr>
+                </table>
+
+                <button id="agregarTiempo">Agregar tiempo</button>
+                <button id="eliminarTiempo">Eliminar tiempo</button>
+              </div>
+
+            </div>
+          
+            <!-- COLUMNA DERECHA: data panels -->
+            <div class="right-column">
+              <div class="data-panel">
+                <div class="input-group">
+                  <label for="tiempoCiclo">Tiempo entre ciclos:</label>
+                  <input type="text" id="tiempoCiclo"/>
+                  <label for="estrategiaGestion">Estrategia de gestión de memoria:</label>
+                  <select id="estrategiaGestion">
+                    <option value="ETF">Particiones estáticas de tamaño fijo</option>
+                    <option value="ETV">Particiones estáticas de tamaño variable</option>
+                    <option value="DIN">Particiones dinámicas</option>
+                  </select>
+
+                  <label for="opcionesEstrategia">Opciones de estrategia:</label>
+                  <select id="opcionesEstrategia">
+                  </select>
+                </div>
+              </div>
+
+              <div class="data-panel">
+                <!-- Primer bloque de inputs -->
+                <button id="ejecutar">Ejecutar</button>
+                <div class="info">
+                  <p>Aplicativo de gestión de memoria.</p>
+                </div>
+              </div>
+
+              <div class="data-panel">
+                <p>Memoria:</p>
+                <table class="log-table" id="tablaMemoria">
+                  <thead>
+                    <tr>
+                      <th>HEX</th>
+                      <th>DEC</th>
+                      <th>P</th>
+                      <th>T (Bytes)</th>
+                    </tr>
+                  </thead>
+                </table>
+
+                <p>Estado de memoria:</p>
+                <table class="log-table" id="tablaEstadoMemoria">
+                  <thead>
+                    <tr>
+                      <th>Ocupado (Bytes)</th>
+                      <th>Libre (Bytes)</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+          </div>
+      <div class="another-column">
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="terminal-title">Terminal</span>
+          </div>
+        <div class="terminal-body" id="terminal1"></div>
+       </div>
+       <div class="bottom-panel">
+                <p>Particiones:</p>
+                <table class="log-table" id="tablaParticiones">
+                  <thead>
+                    <tr>
+                      <th>MiB</th>
+                      <th>KiB</th>
+                      <th>Bytes</th>
+                      <th>Cantidad</th>
+                    </tr>
+                  </thead>
+                    <tr>
+                      <td contenteditable="true">1</td>
+                      <td></td>
+                      <td></td>
+                      <td contenteditable="true">1</td>
+                    </tr>
+                </table>
+
+                <button id="agregarParticion">Agregar partición</button>
+                <button id="eliminarParticion">Eliminar partición</button>
+              </div>
+
+              <div class="bottom-panel">
+                <p>Lista de procesos:</p>
+                <table class="log-table" id="tablaProcesos">
+                  <thead>
+                    <tr>
+                      <th>PID</th>
+                      <th>Memoria inicial</th>
+                      <th>Memoria a usar (B)</th>
+                      <th>Memoria a usar (KiB)</th>
+                    </tr>
+                  </thead>
+                </table>
+
+                <p>Tabla de fragmentos libres:</p>
+                <table class="log-table" id="tablaFragmentos">
+                  <thead>
+                    <tr>
+                      <th>Base DEC</th>
+                      <th>Base HEX</th>
+                      <th>Tamaño</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+      </div>            
+    </div>
+  <script type="module" src="Entrada.js"></script>
+</body>
+</html>
