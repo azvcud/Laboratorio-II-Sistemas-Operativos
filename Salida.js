@@ -230,9 +230,9 @@ export class Salida {
             const tdKiB = fila.cells[2];
             const tdB   = fila.cells[3];
 
-            const valMiB = parseFloat(tdMiB.textContent) || null;
-            const valKiB = parseFloat(tdKiB.textContent) || null;
-            const valB   = parseFloat(tdB.textContent) || null;
+            const valMiB = parseInt(tdMiB.textContent) || null;
+            const valKiB = parseInt(tdKiB.textContent) || null;
+            const valB   = parseInt(tdB.textContent) || null;
 
             if (valMiB !== null) {
                 tdKiB.textContent = (valMiB * 1024).toFixed(0);

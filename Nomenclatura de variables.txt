@@ -7,10 +7,13 @@ co:     Contador
 ca:     Cantidad
 dif:    Diferencia
 disp:   Disponible
+et:     Etiqueta
 hex:    Hexadecimal
+i:      Índice
 m:      Multiplicador
 n:      Número
 o:      Opción
+pa:     Parte
 p:      Positivo(a)
 proc:   Proceso
 pos:    Posición(es)

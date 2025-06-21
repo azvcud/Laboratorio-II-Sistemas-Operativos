@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
         table_procesos, table_fragmentos, input_tiempoCiclo
     ) {
         const generalidades = extraerGeneralidades(table_generalidades);
+
         const t_MiB_ram     = generalidades[0];
         const t_KiB_stack   = generalidades[1];
         const t_KiB_heap    = generalidades[2];
