@@ -15,7 +15,6 @@ export class Estrategia_segmentacion {
     }
 
     gestionarMemoriaProcesos(memoria, procesos) {
-        console.log(procesos);
         memoria = this.limpiarMemoria(memoria, procesos);
         memoria = this.unirParticionesLibres(memoria);
 

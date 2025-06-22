@@ -5,6 +5,7 @@ import { Estrategia_t_fijo } from './Estrategia_t_fijo.js';
 import { Estrategia_t_variable } from './Estrategia_t_variable.js';
 import { Estrategia_segmentacion } from './Estrategia_segmentacion.js';
 import { Estrategia_dinamica } from './Estrategia_dinamica.js';
+import { Estrategia_paginacion } from './Estrategia_paginacion.js';
 import { GestorMemoria } from './GestorMemoria.js';
 import { Test_Salida } from './Test_salida.js';
 
@@ -43,9 +44,10 @@ const estrategia_t_fijo         = new Estrategia_t_fijo(1, salida);
 const estrategia_t_variable     = new Estrategia_t_variable(particiones, 'mejor', salida);
 const estrategia_dinamica       = new Estrategia_dinamica('mejor', salida);
 const estrategia_segmentacion   = new Estrategia_segmentacion(5, 19, salida);
+const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
 
 estrategia_dinamica.b_compactacion = false;
-gestorMemoria.estrategia_gestor = estrategia_segmentacion;
+gestorMemoria.estrategia_gestor = estrategia_paginacion;
 
 const windows = new SO(1, gestorMemoria, programas, procesos, salida, 500);
 windows.encender();

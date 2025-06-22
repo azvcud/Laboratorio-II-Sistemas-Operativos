@@ -9,6 +9,7 @@ export class Memoria {
         this._t_KiB_heap    = t_KiB_heap;
         this._t_B_header    = t_B_header;
         this._c_ram         = [];
+        this._c_marcos      = [];
     }
 
     get_t_ram(u_dev) {
@@ -58,10 +59,11 @@ export class Memoria {
         this._c_ram.push(particion);
     }
 
-    set c_ram(c_ram) { this._c_ram = c_ram; }
+    set c_ram(c_ram)        { this._c_ram = c_ram; }
 
     get t_KiB_stack()   { return this._t_KiB_stack; }
     get t_KiB_heap()    { return this._t_KiB_heap; }
     get t_B_header()    { return this._t_B_header; }
     get c_ram()         { return this._c_ram; }
+    get c_marcos()      { return this._c_marcos; }
 }
