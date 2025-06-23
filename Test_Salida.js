@@ -45,6 +45,14 @@ export class Test_Salida {
     tablaFragmentos(bloques, direccionesDEC, direccionesHEX) {
     }
 
+    tablaSpecSegmentos(segmentos) {
+        
+    }
+
+    tablaSpecPaginas(paginas) {
+        
+    }
+
     interfazWeb(message) {
         console.log(message);
     }

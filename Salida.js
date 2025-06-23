@@ -249,11 +249,11 @@ export class Salida {
 
     calcular_t_disco(table_programa) { 
         for (let i = 1; i < table_programa.rows.length; i++) {
-            const fila = table_programa.rows[i];
-            const tdTamañoDisco = fila.cells[1];
-            const tdCodigo = parseInt(fila.cells[2].textContent) || 0;
-            const tdInicializados = parseInt(fila.cells[3].textContent) || 0;
-            const tdSinInicializar = parseInt(fila.cells[4].textContent) || 0;
+            const fila              = table_programa.rows[i];
+            const tdTamañoDisco     = fila.cells[1];
+            const tdCodigo          = parseInt(fila.cells[2].textContent) || 0;
+            const tdInicializados   = parseInt(fila.cells[3].textContent) || 0;
+            const tdSinInicializar  = parseInt(fila.cells[4].textContent) || 0;
 
             const total = tdCodigo + tdInicializados + tdSinInicializar;
             tdTamañoDisco.textContent = total;
@@ -281,6 +281,31 @@ export class Salida {
         });
     }
 
+    tablaDescripcion(particiones, direciconesDEC, direccionesHEX, b_proc_unic_activos) {
+        const tabla = this.ids[5];
+
+        while (tabla.rows.length > 1) {
+            tabla.deleteRow(1);
+        }
+
+        for (let i = 0; i < particiones.length; i++) {
+            const fila  = tabla.insertRow();
+            const proc  = particiones[i][1];
+            
+            let pid; let lo;
+            if(proc === null)                   { pid = 0; lo = 0; }
+            else if(typeof proc === "string")   { pid = proc; lo = 1; }
+            else                                { pid = 'P' + proc.pid; lo = 1; }
+
+            if(!(b_proc_unic_activos && pid === 0)) {
+                fila.insertCell().textContent = pid;
+                fila.insertCell().textContent = lo;
+                fila.insertCell().textContent = direciconesDEC[i];
+                fila.insertCell().textContent = direccionesHEX[i];
+            }
+        }
+    }
+
     tablaFragmentos(bloques, direccionesDEC, direccionesHEX) {
         const tabla = this.ids[3];
 
@@ -296,6 +321,78 @@ export class Salida {
                 fila.insertCell().textContent = bloques[i][0];
             }
         }
+    }
+
+    tablaSpecSegmentos(segmentos) {
+        const tabla         = this.ids[6];
+        const et_seleccion  = ['.text', '.data', '.bss'];
+
+        while (tabla.rows.length > 1) {
+            tabla.deleteRow(1);
+        }
+        
+        const procesos_spec = segmentos
+            .filter(segmento =>
+                typeof segmento[1] === 'object' &&
+                segmento[1] !== null &&
+                et_seleccion.includes(segmento[1].c_segmento) 
+            )
+            .reduce((acc_segmento, obj_segmento) => {
+                const { pid, c_segmento: c_segmento, t_segmento: t_segmento } = obj_segmento[1];
+
+                acc_segmento[pid]                = acc_segmento[pid] || {};
+                acc_segmento[pid][c_segmento]    = acc_segmento[pid][c_segmento] || { cantidad: 0, ultimo_t: Infinity };
+
+                acc_segmento[pid][c_segmento].cantidad++;
+                acc_segmento[pid][c_segmento].ultimo_t = Math.min(acc_segmento[pid][c_segmento].ultimo_t, t_segmento);
+
+                return acc_segmento;
+            }, {});
+        
+        Object.entries(procesos_spec).forEach(proceso => {
+            const fila = tabla.insertRow();
+            fila.insertCell().textContent = proceso[0];
+            fila.insertCell().textContent = proceso[1]['.text'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.text'].ultimo_t;
+            fila.insertCell().textContent = proceso[1]['.data'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.data'].ultimo_t;
+            fila.insertCell().textContent = proceso[1]['.bss'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.bss'].ultimo_t;
+        });
+    }
+
+    tablaSpecPaginas(paginas) {
+        const tabla         = this.ids[7];
+        const et_seleccion  = ['.text', '.data', '.bss'];
+
+        while (tabla.rows.length > 1) {
+            tabla.deleteRow(1);
+        }
+
+        const procesos_spec = paginas
+            .filter(pagina =>
+                typeof pagina[1] === 'object' &&
+                pagina[1] !== null &&
+                et_seleccion.includes(pagina[1].c_pagina)
+            )
+            .reduce((acc_pagina, obj_pagina) => {
+                const { pid, c_pagina: c_pagina, t_segmento: t_segmento } = obj_pagina[1];
+
+                acc_pagina[pid]             = acc_pagina[pid] || {};
+                acc_pagina[pid][c_pagina]   = acc_pagina[pid][c_pagina] || { cantidad: 0 };
+
+                acc_pagina[pid][c_pagina].cantidad++;
+
+                return acc_pagina;
+            }, {});
+        
+        Object.entries(procesos_spec).forEach(proceso => {
+            const fila = tabla.insertRow();
+            fila.insertCell().textContent = proceso[0];
+            fila.insertCell().textContent = proceso[1]['.text'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.data'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.bss'].cantidad;
+        });
     }
 
     interfazWeb(message) {

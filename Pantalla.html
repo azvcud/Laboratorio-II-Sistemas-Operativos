@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>4 Web Terminals</title>
+  <title>Gestión de Memoria - SO</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="stylesheet" href="GUI.css">
 </head>
 <body>
@@ -216,6 +217,43 @@
                 <button id="eliminarTiempo">Eliminar tiempo</button>
               </div>
 
+              <div class="bottom-panel">
+                <p>Particiones:</p>
+                <table class="log-table" id="tablaParticiones">
+                  <thead>
+                    <tr>
+                      <th>MiB</th>
+                      <th>KiB</th>
+                      <th>Bytes</th>
+                      <th>Cantidad</th>
+                    </tr>
+                  </thead>
+                    <tr>
+                      <td contenteditable="true">1</td>
+                      <td></td>
+                      <td></td>
+                      <td contenteditable="true">1</td>
+                    </tr>
+                </table>
+
+                <button id="agregarParticion">Agregar partición</button>
+                <button id="eliminarParticion">Eliminar partición</button>
+
+                <p>Dirección lógica:</p>
+                <table class="log-table" id="tablaDirLogica">
+                  <thead>
+                    <tr>
+                      <th>N° espacios (b)</th>
+                      <th>Offset (b)</th>
+                    </tr>
+                  </thead>
+                    <tr>
+                      <td contenteditable="true">5</td>
+                      <td contenteditable="true">19</td>
+                    </tr>
+                </table>
+              </div>
+
             </div>
           
             <!-- COLUMNA DERECHA: data panels -->
@@ -229,6 +267,8 @@
                     <option value="ETF">Particiones estáticas de tamaño fijo</option>
                     <option value="ETV">Particiones estáticas de tamaño variable</option>
                     <option value="DIN">Particiones dinámicas</option>
+                    <option value="SEG">Segmentación de memoria</option>
+                    <option value="PAG">Paginación de memoria</option>
                   </select>
 
                   <label for="opcionesEstrategia">Opciones de estrategia:</label>
@@ -247,17 +287,18 @@
 
               <div class="data-panel">
                 <p>Memoria:</p>
-                <table class="log-table" id="tablaMemoria">
-                  <thead>
-                    <tr>
-                      <th>HEX</th>
-                      <th>DEC</th>
-                      <th>P</th>
-                      <th>T (Bytes)</th>
-                    </tr>
-                  </thead>
-                </table>
-
+                <div class="scroll-table">
+                  <table class="log-table" id="tablaMemoria">
+                    <thead>
+                      <tr>
+                        <th>HEX</th>
+                        <th>DEC</th>
+                        <th>P</th>
+                        <th>T (Bytes)</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
                 <p>Estado de memoria:</p>
                 <table class="log-table" id="tablaEstadoMemoria">
                   <thead>
@@ -279,29 +320,6 @@
           </div>
         <div class="terminal-body" id="terminal1"></div>
        </div>
-       <div class="bottom-panel">
-                <p>Particiones:</p>
-                <table class="log-table" id="tablaParticiones">
-                  <thead>
-                    <tr>
-                      <th>MiB</th>
-                      <th>KiB</th>
-                      <th>Bytes</th>
-                      <th>Cantidad</th>
-                    </tr>
-                  </thead>
-                    <tr>
-                      <td contenteditable="true">1</td>
-                      <td></td>
-                      <td></td>
-                      <td contenteditable="true">1</td>
-                    </tr>
-                </table>
-
-                <button id="agregarParticion">Agregar partición</button>
-                <button id="eliminarParticion">Eliminar partición</button>
-              </div>
-
               <div class="bottom-panel">
                 <p>Lista de procesos:</p>
                 <table class="log-table" id="tablaProcesos">
@@ -311,6 +329,18 @@
                       <th>Memoria inicial</th>
                       <th>Memoria a usar (B)</th>
                       <th>Memoria a usar (KiB)</th>
+                    </tr>
+                  </thead>
+                </table>
+
+                <p>Tabla de descripción de particiones:</p>
+                <table class="log-table" id="tablaDescripcion">
+                  <thead>
+                    <tr>
+                      <th>PID</th>
+                      <th>L/O</th>
+                      <th>Base DEC</th>
+                      <th>Base HEX</th>
                     </tr>
                   </thead>
                 </table>
@@ -325,7 +355,70 @@
                     </tr>
                   </thead>
                 </table>
+
+                <p>Especificación de segmentos:</p>
+                <table class="log-table" id="tablaSpecSegmentos">
+                  <thead>
+                    <tr>
+                      <th>PID</th>
+                      <th>Segmentos .text</th>
+                      <th>Tamaño del último</th>
+                      <th>Segmentos .data</th>
+                      <th>Tamaño del último</th>
+                      <th>Segmentos .bss</th>
+                      <th>Tamaño del último</th>
+                    </tr>
+                  </thead>
+                </table>
+
+                <p>Especificación de páginas:</p>
+                <table class="log-table" id="tablaSpecPaginas">
+                  <thead>
+                    <tr>
+                      <th>PID</th>
+                      <th>Páginas .text</th>
+                      <th>Páginas .data</th>
+                      <th>Páginas .bss</th>
+                    </tr>
+                  </thead>
+                </table>
               </div>
+            <div class="bottom-panel">
+              <div class="input-group">
+                <label for="numeroProceso">Proceso:</label>
+                  <select id="numeroProceso">
+                  </select>
+              </div>
+
+              <p>Tabla de segmentos:</p>
+              <table class="log-table" id="tablaSegmentos">
+                  <thead>
+                    <tr>
+                      <th>Número DEC</th>
+                      <th>Número HEX</th>
+                      <th>Base DEC</th>
+                      <th>Base HEX</th>
+                      <th>Límite DEC</th>
+                      <th>Límite HEX</th>
+                      <th>Permisos</th>
+                    </tr>
+                  </thead>
+                </table>
+
+                
+              <p>Tabla de páginas:</p>
+              <table class="log-table" id="tablaPaginas">
+                  <thead>
+                    <tr>
+                      <th>Página DEC</th>
+                      <th>Página HEX</th>
+                      <th>Marco DEC</th>
+                      <th>Marco HEX</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                </table>
+            </div>
       </div>            
     </div>
   <script type="module" src="Entrada.js"></script>

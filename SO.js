@@ -1,3 +1,8 @@
+import { Estrategia_dinamica } from './Estrategia_dinamica.js';
+import { Estrategia_paginacion } from './Estrategia_paginacion.js';
+import { Estrategia_segmentacion } from './Estrategia_segmentacion.js';
+import { Estrategia_t_fijo } from './Estrategia_t_fijo.js';
+import { Estrategia_t_variable } from './Estrategia_t_variable.js';
 import { Proceso } from './Proceso.js';
 
 const reloj = {
@@ -88,6 +93,17 @@ export class SO {
     }
 
     actualizarInterfaz(procesosCrear) {
+        const tablaFragmentos_disp = 
+            this.gestorMemoria.estrategia_gestor instanceof Estrategia_dinamica ||
+            this.gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion;
+
+        const tablaDescripcion_disp =
+            this.gestorMemoria.estrategia_gestor instanceof Estrategia_t_fijo ||
+            this.gestorMemoria.estrategia_gestor instanceof Estrategia_t_variable ||
+            this.gestorMemoria.estrategia_gestor instanceof Estrategia_dinamica;
+
+        const b_proc_unic_activos = this.gestorMemoria.estrategia_gestor instanceof Estrategia_dinamica;
+
         this.salida.tablaMemoria(
             this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
             this.gestorMemoria.memoria.get_pos_c_ram('HEX'),
@@ -103,10 +119,33 @@ export class SO {
             procesosCrear
         );
 
-        this.salida.tablaFragmentos(
-            this.gestorMemoria.memoria.c_ram,
-            this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
-            this.gestorMemoria.memoria.get_pos_c_ram('HEX')
-        );
+        if(tablaDescripcion_disp) { 
+            this.salida.tablaDescripcion(
+                this.gestorMemoria.memoria.c_ram,
+                this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
+                this.gestorMemoria.memoria.get_pos_c_ram('HEX'),
+                b_proc_unic_activos
+            );
+        }
+
+        if(tablaFragmentos_disp) {
+            this.salida.tablaFragmentos(
+                this.gestorMemoria.memoria.c_ram,
+                this.gestorMemoria.memoria.get_pos_c_ram('DEC'),
+                this.gestorMemoria.memoria.get_pos_c_ram('HEX')
+            );
+        }
+
+        if(this.gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion) {
+            this.salida.tablaSpecSegmentos(
+                this.gestorMemoria.memoria.c_ram
+            );
+        }
+
+        if(this.gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion) {
+            this.salida.tablaSpecPaginas(
+                this.gestorMemoria.memoria.c_ram
+            );
+        }
     }
 }

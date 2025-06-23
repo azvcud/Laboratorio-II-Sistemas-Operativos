@@ -93,6 +93,7 @@ body {
     padding: 20px;
     font-size: 14px;
     width: 600px;
+    margin-bottom: 25px;
     color: #cccccc;
   }
 
@@ -279,4 +280,9 @@ body {
   #tablaBloqueos select option {
     background-color: #1e1e1e;
     color: #fff;
+  }
+
+  .scroll-table {
+    max-height: 1000px;
+    overflow: auto;
   }

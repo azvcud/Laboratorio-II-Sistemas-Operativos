@@ -6,6 +6,8 @@ import { Estrategia_t_variable } from './Estrategia_t_variable.js';
 import { Estrategia_dinamica } from './Estrategia_dinamica.js';
 import { GestorMemoria } from './GestorMemoria.js';
 import { Salida } from './Salida.js';
+import { Estrategia_segmentacion } from './Estrategia_segmentacion.js';
+import { Estrategia_paginacion } from './Estrategia_paginacion.js';
 
 document.addEventListener("DOMContentLoaded", function () {
     const bt_ejecutarPrograma       = document.getElementById('ejecutar');
@@ -24,7 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const table_memoria             = document.getElementById('tablaMemoria');
     const table_estadoMemoria       = document.getElementById('tablaEstadoMemoria');
     const table_procesos            = document.getElementById('tablaProcesos');
+    const table_descripcion         = document.getElementById('tablaDescripcion');
     const table_fragmentos          = document.getElementById('tablaFragmentos');
+    const table_spec_segmentos      = document.getElementById('tablaSpecSegmentos');
+    const table_spec_paginas        = document.getElementById('tablaSpecPaginas');
+    const table_dir_logica          = document.getElementById('tablaDirLogica');
     const input_tiempoCiclo         = document.getElementById('tiempoCiclo');
     const div_terminal              = document.getElementById('terminal1');
     /*--------------------------------------------------------------------------------------------------------*/
@@ -56,10 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
         filas.forEach(fila => {
             const celdas = fila.querySelectorAll("td");
 
-            const nombre = celdas[0].textContent.trim();
-            const codigo = Number(celdas[2].textContent.trim());
-            const datosIni = Number(celdas[3].textContent.trim());
-            const datosNoIni = Number(celdas[4].textContent.trim());
+            const nombre        = celdas[0].textContent.trim();
+            const codigo        = Number(celdas[2].textContent.trim());
+            const datosIni      = Number(celdas[3].textContent.trim());
+            const datosNoIni    = Number(celdas[4].textContent.trim());
 
             programas.push(Programa.bind(null, nombre, codigo, datosIni, datosNoIni));
         })
@@ -78,8 +84,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Saltamos la primera celda (nombre del proceso)
             for (let j = 1; j < celdas.length; j++) {
-                const valorTexto = celdas[j].textContent.trim();
-                const valor = valorTexto === "" ? -1 : Number(valorTexto);
+                const valorTexto    = celdas[j].textContent.trim();
+                const valor         = valorTexto === "" ? -1 : Number(valorTexto);
+
                 ts_proceso.push(isNaN(valor) ? -1 : valor); // En caso de celda vacía, pone -1
             }
 
@@ -96,12 +103,12 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let i = 1; i < filas.length; i++) {
             const celdas = filas[i].querySelectorAll("td");
 
-            const textoMiB = celdas[0].textContent.trim();
+            const textoMiB      = celdas[0].textContent.trim();
             const textoCantidad = celdas[3].textContent.trim();
 
             // Parseamos con parseFloat para aceptar decimales
-            const t_MiB = textoMiB === "" ? 0 : parseFloat(textoMiB);
-            const cantidad = textoCantidad === "" ? 0 : parseInt(textoCantidad, 10);
+            const t_MiB     = textoMiB === "" ? 0 : parseFloat(textoMiB);
+            const cantidad  = textoCantidad === "" ? 0 : parseInt(textoCantidad, 10);
 
             particiones.push({
                 t_MiB_particion: isNaN(t_MiB) ? 0 : t_MiB,
@@ -112,18 +119,32 @@ document.addEventListener("DOMContentLoaded", function () {
         return particiones;
     }
 
+    function extraerDireccionLogica(table_dir_logica) {
+        const fila                              = table_dir_logica.querySelector("tbody tr");
+        const [n_espaciosCelda, offsetCelda]    = fila.querySelectorAll("td"); 
+        const n_espacios                        = parseInt(n_espaciosCelda.textContent.trim(), 10);
+        const offset                            = parseInt(offsetCelda.textContent.trim(), 10);
+
+        return [n_espacios, offset];
+    }
+
     function ejecutarPrograma(
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones,
         sel_opcionesEstrategia, sel_estrategiaGestor, table_memoria, table_estadoMemoria,
-        table_procesos, table_fragmentos, input_tiempoCiclo
+        table_procesos, table_fragmentos, input_tiempoCiclo, table_descripcion, table_spec_segmentos,
+        table_dir_logica, table_spec_paginas
     ) {
-        const generalidades = extraerGeneralidades(table_generalidades);
+        const generalidades     = extraerGeneralidades(table_generalidades);
+        const bits_direccion    = extraerDireccionLogica(table_dir_logica);
 
         const t_MiB_ram     = generalidades[0];
         const t_KiB_stack   = generalidades[1];
         const t_KiB_heap    = generalidades[2];
         const t_B_header    = generalidades[3];
         const t_MiB_SO      = generalidades[4];
+
+        const t_b_n_espacios = bits_direccion[0];
+        const t_b_offset     = bits_direccion[1];
 
         const ms_retardo    = input_tiempoCiclo.value;
 
@@ -145,20 +166,28 @@ document.addEventListener("DOMContentLoaded", function () {
             default: estrategia_dinamica.b_compactacion = false; break;
         }
 
-        const gestorMemoria         = new GestorMemoria(new Memoria(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header));
-        const estrategia_t_fijo     = new Estrategia_t_fijo(particionFija, salida);
-        const estrategia_t_variable = new Estrategia_t_variable(particiones, ajuste_t_variable, salida);
+        const gestorMemoria             = new GestorMemoria(new Memoria(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header));
+        const estrategia_t_fijo         = new Estrategia_t_fijo(particionFija, salida);
+        const estrategia_t_variable     = new Estrategia_t_variable(particiones, ajuste_t_variable, salida);
+        const estrategia_segmentacion   = new Estrategia_segmentacion(t_b_n_espacios, t_b_offset, salida);
+        const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
         
         switch(sel_estrategiaGestor.value) {
             case 'ETF': gestorMemoria.estrategia_gestor = estrategia_t_fijo; break;
             case 'ETV': gestorMemoria.estrategia_gestor = estrategia_t_variable; break;
             case 'DIN': gestorMemoria.estrategia_gestor = estrategia_dinamica; break;
+            case 'SEG': gestorMemoria.estrategia_gestor = estrategia_segmentacion; break;
+            case 'PAG': gestorMemoria.estrategia_gestor = estrategia_paginacion; break;
+
             default: gestorMemoria.estrategia_gestor = estrategia_t_fijo; break;
         }
 
         const windows = new SO(t_MiB_SO, gestorMemoria, programas, procesos, salida, ms_retardo);
 
-        limpiarGUI(table_memoria, table_estadoMemoria, table_procesos, table_fragmentos);
+        limpiarGUI(
+            table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion, table_spec_segmentos,
+            table_spec_paginas
+        );
         salida.calcularGeneralidades(table_generalidades);
         salida.calcular_t_disco(table_programa);
         salida.calcularParticiones(table_particiones);
@@ -166,7 +195,10 @@ document.addEventListener("DOMContentLoaded", function () {
         windows.encender();
     }
 
-    function limpiarGUI(table_memoria, table_estadoMemoria, table_procesos, table_fragmentos) {
+    function limpiarGUI(
+        table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
+        table_spec_segmentos, table_spec_paginas
+    ) {
         while (table_memoria.rows.length > 1) {
             table_memoria.deleteRow(1);
         }
@@ -182,10 +214,25 @@ document.addEventListener("DOMContentLoaded", function () {
         while (table_fragmentos.rows.length > 1) {
             table_fragmentos.deleteRow(1);
         }
+
+        while (table_descripcion.rows.length > 1) {
+            table_descripcion.deleteRow(1);
+        }
+
+        while (table_spec_segmentos.rows.length > 1) {
+            table_spec_segmentos.deleteRow(1);
+        }
+
+        while (table_spec_paginas.rows.length > 1) {
+            table_spec_paginas.deleteRow(1);
+        }
     }
 
     /*--------------------------------------------------------------------------------------------------------*/
-    const salida = new Salida([table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, div_terminal]);
+    const salida = new Salida([
+        table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, div_terminal, table_descripcion, 
+        table_spec_segmentos, table_spec_paginas
+    ]);
     /*--------------------------------------------------------------------------------------------------------*/
     bt_agregarPrograma.addEventListener('click', () => salida.agregarPrograma(table_programa, table_tiemposProcesos));
     bt_agregarTiempo.addEventListener('click', () => salida.agregarTiempo(table_tiemposProcesos));
@@ -197,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     bt_ejecutarPrograma.addEventListener('click', () => ejecutarPrograma(
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones, sel_opcionesEstrategia,
-        sel_estrategiaGestor, table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, input_tiempoCiclo
+        sel_estrategiaGestor, table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, input_tiempoCiclo,
+        table_descripcion, table_spec_segmentos, table_dir_logica, table_spec_paginas
     ));
 })

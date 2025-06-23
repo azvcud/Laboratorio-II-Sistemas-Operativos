@@ -22,6 +22,7 @@ sig:    Siguiente
 sum:    Suma/Sumatoria
 t:      Tamaño
 ts:     Tiempo
+unic:   Únicamente
 u_dev:  Unidad derivada
 v_act:  Valor actual
 v:      Valor
