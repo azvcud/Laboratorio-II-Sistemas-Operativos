@@ -19,6 +19,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const bt_eliminarParticion      = document.getElementById('eliminarParticion');
     const sel_estrategiaGestor      = document.getElementById('estrategiaGestion');
     const sel_opcionesEstrategia    = document.getElementById('opcionesEstrategia');
+    const sel_programasEjecutar     = document.getElementById('programasEjecutar');
+    const sel_programasCerrar       = document.getElementById('programasCerrar');
     const sel_n_proceso             = document.getElementById('numeroProceso');
     const table_programa            = document.getElementById('tablaProgramas');
     const table_tiemposProcesos     = document.getElementById('tablaTiemposProcesos');
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const table_paginas             = document.getElementById('tablaPaginas');
     const input_tiempoCiclo         = document.getElementById('tiempoCiclo');
     const div_terminal              = document.getElementById('terminal1');
+    const checkbox_ejecucion        = document.getElementById('ejecucionManual');
     /*--------------------------------------------------------------------------------------------------------*/
 
     function extraerGeneralidades(table_generalidades) {
@@ -131,11 +134,64 @@ document.addEventListener("DOMContentLoaded", function () {
         return [n_espacios, offset];
     }
 
+    function opcionesProgramas(programas, sel_programasEjecutar, sel_programasCerrar) {
+        sel_programasEjecutar.innerHTML = '';
+        sel_programasCerrar.innerHTML = '';
+
+        programas.forEach(programa => {
+            const opcionE = document.createElement('option');
+            const opcionC = document.createElement('option');
+            opcionE.text = programa.nombre;
+            opcionC.text = programa.nombre;
+
+            sel_programasEjecutar.appendChild(opcionE);
+            sel_programasCerrar.appendChild(opcionC);
+        });
+
+        sel_programasEjecutar.selectedIndex = -1;
+        sel_programasCerrar.selectedIndex = -1;
+    }
+
+    
+    function ejecutarProcesos(procesos, salida, sel_programasEjecutar, sel_programasCerrar) {
+        const estados_anteriores    = salida.get_estado_anterior();
+        const estado_procesos       = salida.get_estado_anterior()[salida.estado_anterior.length - 1];
+        const pid_ejecutar          = sel_programasEjecutar.selectedIndex + 1;
+        const pid_cerrar            = sel_programasCerrar.selectedIndex + 1;
+
+        while(estado_procesos.length > procesos.length) { estado_procesos.pop(); }
+        while(estado_procesos.length < procesos.length) { estado_procesos.push(-1); }
+
+        procesos.forEach(proceso => {
+            if(proceso.pid === pid_cerrar)
+            { estado_procesos[proceso.pid - 1] = -1; }
+            else if(estado_procesos[proceso.pid - 1] === 1)
+            { estado_procesos[proceso.pid - 1] = 0; }
+            else if(proceso.pid === pid_ejecutar)
+            { estado_procesos[proceso.pid - 1] = 1; }
+
+            proceso.ts_proceso = [];
+        });
+
+        estados_anteriores.push([...estado_procesos]);
+
+        for(let i = 0; i < estados_anteriores.length; i++) {
+            const i_estado = estados_anteriores[i];
+ 
+            for(let j = 0; j < i_estado.length; j++) {
+                procesos[j].ts_proceso.push(i_estado[j]);
+            }
+        }
+
+        return [procesos, estados_anteriores];
+    }
+
     function ejecutarPrograma(
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones,
         sel_opcionesEstrategia, sel_estrategiaGestor, table_memoria, table_estadoMemoria,
         table_procesos, table_fragmentos, input_tiempoCiclo, table_descripcion, table_spec_segmentos,
-        table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
+        table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas,
+        checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar
     ) {
         const generalidades     = extraerGeneralidades(table_generalidades);
         const bits_direccion    = extraerDireccionLogica(table_dir_logica);
@@ -145,11 +201,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const t_KiB_heap    = generalidades[2];
         const t_B_header    = generalidades[3];
         const t_MiB_SO      = generalidades[4];
+        const t_MiB_virtual = generalidades[5];
 
         const t_b_n_espacios = bits_direccion[0];
         const t_b_offset     = bits_direccion[1];
 
-        const ms_retardo    = input_tiempoCiclo.value;
+        const ms_retardo        = input_tiempoCiclo.value;
+        const ejecucionManual   = checkbox_ejecucion.checked;
 
         const programas     = extraerProgramas(table_programa);
         const procesos      = extraerTiempos(table_tiemposProcesos);
@@ -169,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
             default: estrategia_dinamica.b_compactacion = false; break;
         }
 
-        const gestorMemoria             = new GestorMemoria(new Memoria(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header));
+        const gestorMemoria             = new GestorMemoria(new Memoria(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header, t_MiB_virtual));
         const estrategia_t_fijo         = new Estrategia_t_fijo(particionFija, salida);
         const estrategia_t_variable     = new Estrategia_t_variable(particiones, ajuste_t_variable, salida);
         const estrategia_segmentacion   = new Estrategia_segmentacion(t_b_n_espacios, t_b_offset, salida);
@@ -187,10 +245,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const windows = new SO(t_MiB_SO, gestorMemoria, programas, procesos, salida, ms_retardo);
 
+        if(ejecucionManual) 
+        { 
+            const valores           = ejecutarProcesos(procesos, salida, sel_programasEjecutar, sel_programasCerrar);
+            windows.procesos        = valores[0];
+            salida.set_estado_anterior(valores[1]);
+        }
+        else
+        { salida.set_estado_anterior([[-1, -1, -1, -1, -1, -1, -1, -1]]); }
+
         limpiarGUI(
             table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion, table_spec_segmentos,
             table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
         );
+
+        opcionesProgramas(windows.programas, sel_programasEjecutar, sel_programasCerrar);
+
         salida.calcularGeneralidades(table_generalidades);
         salida.calcular_t_disco(table_programa);
         salida.calcularParticiones(table_particiones);
@@ -253,13 +323,17 @@ document.addEventListener("DOMContentLoaded", function () {
     bt_eliminarPrograma.addEventListener('click', () => salida.eliminarPrograma(table_programa, table_tiemposProcesos));
     bt_eliminarTiempo.addEventListener('click', () => salida.eliminarTiempo(table_tiemposProcesos));
     bt_eliminarParticion.addEventListener('click', () => salida.eliminarParticion(table_particiones));
-    sel_estrategiaGestor.addEventListener('change', () => salida.opcionesEstrategia(sel_estrategiaGestor, sel_opcionesEstrategia));
     sel_n_proceso.addEventListener('change', () => salida.detallesProceso(sel_n_proceso, table_segmentos, table_paginas));
+
+    sel_estrategiaGestor.addEventListener('change', () => {
+        salida.opcionesEstrategia(sel_estrategiaGestor, sel_opcionesEstrategia);
+        salida.set_estado_anterior([[-1, -1, -1, -1, -1, -1, -1, -1]]);
+    });
 
     bt_ejecutarPrograma.addEventListener('click', () => ejecutarPrograma(
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones, sel_opcionesEstrategia,
         sel_estrategiaGestor, table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, input_tiempoCiclo,
         table_descripcion, table_spec_segmentos, table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos,
-        table_paginas
+        table_paginas, checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar
     ));
 })

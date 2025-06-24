@@ -33,6 +33,11 @@ export class Estrategia_segmentacion {
     insertarProcesoMemoria(memoria, proceso) {
         const proc_segmentado = this.segmentarProceso(proceso);
 
+        if(proc_segmentado.length > this.B_ca_segmentos) {
+            this.salida.interfazWeb(`⛔ [ERROR] Error de segmentación. El proceso ${proceso.pid} no se creó.`);
+            return memoria;
+        }
+
         proc_segmentado.forEach(segmento => {
             const t_espaciosDisponibles = memoria.c_ram
                 .filter(espacio => espacio[1] === null)
@@ -93,7 +98,7 @@ export class Estrategia_segmentacion {
 
             i_segmento += 1;
         }
-
+        
         return proc_segmentado;
     }
 

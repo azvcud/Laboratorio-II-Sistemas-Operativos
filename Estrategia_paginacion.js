@@ -8,8 +8,12 @@ export class Estrategia_paginacion {
     }
 
     particionarMemoria(memoria) {
-        const t_B_disp_ram  = memoria.get_t_disp_ram('B');
-        const n_particiones = Math.floor(t_B_disp_ram / this.B_t_pagina);
+        const t_B_disp_ram      = memoria.get_t_disp_ram('B');
+        const n_particiones     = Math.floor(t_B_disp_ram / this.B_t_pagina);
+        const n_marcos_virtual  = Math.floor(memoria.t_B_virtual / this.B_t_pagina);
+        
+        this.salida.interfazWeb(`ℹ️ [INFO] Número de marcos virtuales: ${n_marcos_virtual}`);
+        this.salida.interfazWeb(`ℹ️ [INFO] Total de memoria direccionable: ${memoria.t_B_virtual + (memoria.t_MiB_ram * 1048576)} B`);
 
         memoria = this.paginarSO(memoria);
         memoria.c_ram.push(...Array.from({length: n_particiones}, () => [this.B_t_pagina, null]));
@@ -62,6 +66,11 @@ export class Estrategia_paginacion {
         proceso.c_proceso.forEach(t_espacio => {
             const c_paginas_espacio = Math.ceil(t_espacio / this.B_t_pagina);
             const c_pagina          = Estrategia_paginacion.et_segmento[i_pagina];
+
+            if(c_paginas_espacio > this.B_n_pagina) {
+                this.salida.interfazWeb(`⛔ [ERROR] Error de paginación. El proceso ${proceso.pid} no se creó.`);
+                return memoria;
+            }
 
             for(let i = 0; i < c_paginas_espacio; i++) {
                 const i_espacioDisponible   = memoria.c_ram.findIndex(espacio => espacio[1] === null);

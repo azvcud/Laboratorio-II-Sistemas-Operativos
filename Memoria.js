@@ -3,13 +3,14 @@ export class Memoria {
     static BYTES_EN_1MiB    = 1048576;
     static BITS_EN_1MiB     = 8388608;
 
-    constructor(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header) {
+    constructor(t_MiB_ram, t_KiB_stack, t_KiB_heap, t_B_header, t_MiB_virtual) {
         this.t_MiB_ram      = t_MiB_ram;
         this._t_KiB_stack   = t_KiB_stack;
         this._t_KiB_heap    = t_KiB_heap;
         this._t_B_header    = t_B_header;
         this._c_ram         = [];
         this._c_marcos      = [];
+        this._t_B_virtual   = t_MiB_virtual * Memoria.BYTES_EN_1MiB;
     }
 
     get_t_ram(u_dev) {
@@ -64,6 +65,7 @@ export class Memoria {
     get t_KiB_stack()   { return this._t_KiB_stack; }
     get t_KiB_heap()    { return this._t_KiB_heap; }
     get t_B_header()    { return this._t_B_header; }
+    get t_B_virtual()   { return this._t_B_virtual; }
     get c_ram()         { return this._c_ram; }
     get c_marcos()      { return this._c_marcos; }
 }

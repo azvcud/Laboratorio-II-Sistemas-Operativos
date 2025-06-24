@@ -10,6 +10,7 @@ export class Salida {
         this._v_act_dirDEC      = [];
         this._v_act_dirHEX      = [];
         this._v_act_estrategia  = '';
+        this.estado_anterior    = [[-1, -1, -1, -1, -1, -1, -1, -1]];
     }
 
     agregarPrograma(table_programa, table_tiemposProcesos) {
@@ -399,13 +400,21 @@ export class Salida {
 
                 return acc_pagina;
             }, {});
+
+        Object.keys(procesos_spec).forEach(pid => {
+            et_seleccion.forEach(seg => {
+                if (!procesos_spec[pid][seg]) {
+                    procesos_spec[pid][seg] = { cantidad: 0 };
+                }
+            });
+        });
         
         Object.entries(procesos_spec).forEach(proceso => {
             const fila = tabla.insertRow();
             fila.insertCell().textContent = proceso[0];
-            fila.insertCell().textContent = proceso[1]['.text'].cantidad;
-            fila.insertCell().textContent = proceso[1]['.data'].cantidad;
-            fila.insertCell().textContent = proceso[1]['.bss'].cantidad;
+            fila.insertCell().textContent = proceso[1]['.text'].cantidad ?? 0;
+            fila.insertCell().textContent = proceso[1]['.data'].cantidad ?? 0;
+            fila.insertCell().textContent = proceso[1]['.bss'].cantidad ?? 0;
         });
     }
 
@@ -539,7 +548,15 @@ export class Salida {
         output.scrollTop = output.scrollHeight;
     };
 
-    get ids() { return this._ids; }
+    get_estado_anterior() {
+        return this.estado_anterior.map(fila => [...fila]);
+    }
+
+    set_estado_anterior(estado_anterior) {
+        this.estado_anterior = estado_anterior;
+    }
+
+    get ids()               { return this._ids; }
 
     set v_act_memoria(v_act_memoria)        { this._v_act_memoria = v_act_memoria; }
     set v_act_estrategia(v_act_estrategia)  { this._v_act_estrategia = v_act_estrategia; }

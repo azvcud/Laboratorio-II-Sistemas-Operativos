@@ -39,7 +39,7 @@ const particiones = [
 ];
 
 const salida                    = new Test_Salida([]);
-const gestorMemoria             = new GestorMemoria(new Memoria(16, 64, 128, 767));
+const gestorMemoria             = new GestorMemoria(new Memoria(16, 64, 128, 767, 256));
 const estrategia_t_fijo         = new Estrategia_t_fijo(1, salida);
 const estrategia_t_variable     = new Estrategia_t_variable(particiones, 'mejor', salida);
 const estrategia_dinamica       = new Estrategia_dinamica('mejor', salida);
@@ -47,7 +47,7 @@ const estrategia_segmentacion   = new Estrategia_segmentacion(5, 19, salida);
 const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
 
 estrategia_dinamica.b_compactacion = false;
-gestorMemoria.estrategia_gestor = estrategia_segmentacion;
+gestorMemoria.estrategia_gestor = estrategia_paginacion;
 
 const windows = new SO(1, gestorMemoria, programas, procesos, salida, 500);
 windows.encender();
