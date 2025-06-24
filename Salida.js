@@ -5,7 +5,11 @@ export class Salida {
     static particiones            = 1;
 
     constructor(ids) {
-        this.ids = ids;
+        this._ids               = ids;
+        this._v_act_memoria     = [];
+        this._v_act_dirDEC      = [];
+        this._v_act_dirHEX      = [];
+        this._v_act_estrategia  = '';
     }
 
     agregarPrograma(table_programa, table_tiemposProcesos) {
@@ -152,7 +156,7 @@ export class Salida {
     }
 
     tablaMemoria(rangosDec, rangosHex, particiones) {
-        const tabla = this.ids[0];
+        const tabla     = this._ids[0];
 
         // Vaciar la tabla (por si ya tiene algo)
         while (tabla.rows.length > 1) {
@@ -177,6 +181,11 @@ export class Salida {
                 nombreProceso = contenido;
             } else if (contenido && typeof contenido === 'object' && 'pid' in contenido) {
                 nombreProceso = `p${contenido.pid}`;
+
+                if(this._v_act_estrategia === 'SEG') 
+                { nombreProceso = nombreProceso + ` (${contenido.c_segmento})`}
+                if(this._v_act_estrategia === 'PAG') 
+                { nombreProceso = nombreProceso + ` (${contenido.c_pagina})`}
             }
 
             const fila = tabla.insertRow();
@@ -184,11 +193,16 @@ export class Salida {
             fila.insertCell().textContent = `${decInicio} - ${decFin}`;
             fila.insertCell().textContent = nombreProceso;
             fila.insertCell().textContent = tam;
+
+            if(this._v_act_estrategia === 'PAG') {
+                fila.insertCell().textContent = i;
+                fila.insertCell().textContent = i.toString(16);
+            }
         }
     }
 
     metricasEspacio(memoriaOcupada, memoriaLibre) {
-        const tabla = this.ids[1];
+        const tabla = this._ids[1];
 
         // Limpiar todas las filas excepto la cabecera
         while (tabla.rows.length > 1) {
@@ -202,7 +216,7 @@ export class Salida {
     }
 
     listaProcesos(procesos) {
-        const tabla = this.ids[2];
+        const tabla = this._ids[2];
 
         // Limpiar filas anteriores (sin tocar el thead)
         while (tabla.rows.length > 1) {
@@ -282,7 +296,7 @@ export class Salida {
     }
 
     tablaDescripcion(particiones, direciconesDEC, direccionesHEX, b_proc_unic_activos) {
-        const tabla = this.ids[5];
+        const tabla = this._ids[5];
 
         while (tabla.rows.length > 1) {
             tabla.deleteRow(1);
@@ -307,7 +321,7 @@ export class Salida {
     }
 
     tablaFragmentos(bloques, direccionesDEC, direccionesHEX) {
-        const tabla = this.ids[3];
+        const tabla = this._ids[3];
 
         while (tabla.rows.length > 1) {
             tabla.deleteRow(1);
@@ -324,7 +338,7 @@ export class Salida {
     }
 
     tablaSpecSegmentos(segmentos) {
-        const tabla         = this.ids[6];
+        const tabla         = this._ids[6];
         const et_seleccion  = ['.text', '.data', '.bss'];
 
         while (tabla.rows.length > 1) {
@@ -362,7 +376,7 @@ export class Salida {
     }
 
     tablaSpecPaginas(paginas) {
-        const tabla         = this.ids[7];
+        const tabla         = this._ids[7];
         const et_seleccion  = ['.text', '.data', '.bss'];
 
         while (tabla.rows.length > 1) {
@@ -395,8 +409,114 @@ export class Salida {
         });
     }
 
+    opcionesProcesos(procesosActuales) {
+        const selector = this._ids[8];
+        selector.innerHTML = '';
+        
+        procesosActuales
+            .flatMap(proceso => {
+                return 'Proceso ' + proceso['_pid']; 
+            })
+            .sort((proceso_x, proceso_x_1) => {
+                const numX      = parseInt(proceso_x.match(/\d+/)[0]); 
+                const numX_1    = parseInt(proceso_x_1.match(/\d+/)[0]); 
+
+                return numX - numX_1;
+            })
+            .forEach(proceso => {
+                const opcion = document.createElement('option');
+                opcion.value = proceso.match(/\d+/g);
+                opcion.text = proceso;
+                
+                selector.appendChild(opcion);
+            });
+
+        selector.selectedIndex = -1;
+    }
+
+    detallesProceso(seleccion, table_segmentos, table_paginas) {
+        const v_seleccionado    = parseInt(seleccion.value);
+        const et_segmento       = ['.text', '.data', '.bss', '.heap', '.stack'];
+
+        while (table_segmentos.rows.length > 1) {
+            table_segmentos.deleteRow(1);
+        }
+
+        while (table_paginas.rows.length > 1) {
+            table_paginas.deleteRow(1);
+        }
+
+        switch(this._v_act_estrategia) {
+            case 'SEG':
+                this._v_act_memoria
+                    .map((segmento, i) => [i, ...segmento]) 
+                    .filter(segmento => 
+                        typeof segmento[2] === 'object' &&
+                        segmento[2] !== null &&
+                        segmento[2]['pid'] === v_seleccionado
+                    )
+                    .sort((segmento_x, segmento_x_1) => {
+                        const c_segmento_x      = segmento_x[2].c_segmento;
+                        const c_segmento_x_1    = segmento_x_1[2].c_segmento;
+
+                        const i_c_segmento_x    = et_segmento.indexOf(c_segmento_x);
+                        const i_c_segmento_x_1  = et_segmento.indexOf(c_segmento_x_1);
+
+                        if(i_c_segmento_x !== i_c_segmento_x_1) { return i_c_segmento_x - i_c_segmento_x_1; }
+
+                        return segmento_x_1[2].t_segmento - segmento_x[2].t_segmento;
+                    })
+                    .forEach((segmento, i) => {
+                        const permisos = i === 0? 'RX' : 'RW';
+
+                        const fila = table_segmentos.insertRow();
+                        fila.insertCell().textContent = i;
+                        fila.insertCell().textContent = i.toString(16);
+                        fila.insertCell().textContent = this._v_act_dirDEC[segmento[0]];
+                        fila.insertCell().textContent = this._v_act_dirHEX[segmento[0]];
+                        fila.insertCell().textContent = segmento[1];
+                        fila.insertCell().textContent = segmento[1].toString(16);
+                        fila.insertCell().textContent = permisos;
+                        fila.insertCell().textContent = segmento[2].c_segmento;
+                    });
+
+                break;
+            case 'PAG':
+                this._v_act_memoria
+                    .map((pagina, i) => [i, ...pagina]) 
+                    .filter(pagina => 
+                        typeof pagina[2] === 'object' &&
+                        pagina[2] !== null &&
+                        pagina[2]['pid'] === v_seleccionado
+                    )
+                    .sort((pagina_x, pagina_x_1) => {
+                        const c_pagina_x      = pagina_x[2].c_pagina;
+                        const c_pagina_x_1    = pagina_x_1[2].c_pagina;
+
+                        const i_c_pagina_x    = et_segmento.indexOf(c_pagina_x);
+                        const i_c_pagina_x_1  = et_segmento.indexOf(c_pagina_x_1);
+
+                        if(i_c_pagina_x !== i_c_pagina_x_1) { return i_c_pagina_x - i_c_pagina_x_1; }
+
+                        return pagina_x_1[2].t_pagina - pagina_x[2].t_pagina;
+                    })
+                    .forEach((pagina, i) => {
+                        const fila = table_paginas.insertRow();
+                        fila.insertCell().textContent = i;
+                        fila.insertCell().textContent = i.toString(16);
+                        fila.insertCell().textContent = pagina[0];
+                        fila.insertCell().textContent = pagina[0].toString(16);
+                        fila.insertCell().textContent = 'Presente';
+                        fila.insertCell().textContent = pagina[2].c_pagina;
+                    });
+
+                break;
+            default: break;
+        }
+    }
+
     interfazWeb(message) {
-        const output = this.ids[4];
+        const output = this._ids[4];
         const line = document.createElement("p");
         line.className = "line";
 
@@ -418,4 +538,11 @@ export class Salida {
         output.appendChild(line);
         output.scrollTop = output.scrollHeight;
     };
+
+    get ids() { return this._ids; }
+
+    set v_act_memoria(v_act_memoria)        { this._v_act_memoria = v_act_memoria; }
+    set v_act_estrategia(v_act_estrategia)  { this._v_act_estrategia = v_act_estrategia; }
+    set v_act_dirDEC(v_act_dirDEC)          { this._v_act_dirDEC = v_act_dirDEC; }
+    set v_act_dirHEX(v_act_dirHEX)          { this._v_act_dirHEX = v_act_dirHEX; }
 }

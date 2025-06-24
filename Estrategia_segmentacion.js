@@ -69,50 +69,34 @@ export class Estrategia_segmentacion {
     }
 
     segmentarProceso(proceso) {
-        const c_proceso         = proceso.c_proceso;
-        
-        const t_segmentacion = c_proceso.flatMap(t_ejecutable => {
-            if (t_ejecutable <= this.B_t_max_segmento)
-            { return t_ejecutable; }
+        const pid = proceso.pid;
+        const proc_segmentado = [];
+        const et_segmentos = Estrategia_segmentacion.et_segmento;
 
-            else {
-                const c_segmentado_partes = (v_segmento, c_segmento = []) => {
-                    if(v_segmento <= 0) { return c_segmento; }
-                    
-                    const t_segmento = Math.min(this.B_t_max_segmento, v_segmento);
-                    return c_segmentado_partes(v_segmento - t_segmento, [...c_segmento, t_segmento]);
-                }
-                return [c_segmentado_partes(t_ejecutable)];
-            }  
-        });
+        let i_segmento = 0;
 
-        const proc_segmentado   = [];
-        const pid               = proceso.pid;
-        let i_segmento          = 0;
+        for (const t_ejecutable of proceso.c_proceso) {
+            let restante = t_ejecutable;
 
-        t_segmentacion.forEach(t_segmento => {
-            const c_segmento = Estrategia_segmentacion.et_segmento[i_segmento]; 
+            while (restante > 0) {
+                const t_segmento = Math.min(this.B_t_max_segmento, restante);
+                const c_segmento = et_segmentos[i_segmento];
 
-            if (t_segmento instanceof Array) 
-            { t_segmento.forEach(pa_segmento => proc_segmentado.push({
-                    t_segmento : pa_segmento,
-                    c_segmento : c_segmento,
-                    pid        : pid
-                })); 
-            }
-            else 
-            { proc_segmentado.push({
-                    t_segmento : t_segmento,
-                    c_segmento : c_segmento,
-                    pid        : pid
-                }); 
+                proc_segmentado.push({
+                    t_segmento: t_segmento,
+                    c_segmento: c_segmento,
+                    pid: pid
+                });
+
+                restante -= t_segmento;
             }
 
-            i_segmento = i_segmento + 1;
-        });
+            i_segmento += 1;
+        }
 
         return proc_segmentado;
     }
+
 
     limpiarMemoria(memoria, procesos) {
         const proc_ubicarMemoria = new Set(procesos.map(proceso => proceso.pid));

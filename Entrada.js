@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const bt_eliminarParticion      = document.getElementById('eliminarParticion');
     const sel_estrategiaGestor      = document.getElementById('estrategiaGestion');
     const sel_opcionesEstrategia    = document.getElementById('opcionesEstrategia');
+    const sel_n_proceso             = document.getElementById('numeroProceso');
     const table_programa            = document.getElementById('tablaProgramas');
     const table_tiemposProcesos     = document.getElementById('tablaTiemposProcesos');
     const table_particiones         = document.getElementById('tablaParticiones');
@@ -31,6 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const table_spec_segmentos      = document.getElementById('tablaSpecSegmentos');
     const table_spec_paginas        = document.getElementById('tablaSpecPaginas');
     const table_dir_logica          = document.getElementById('tablaDirLogica');
+    const table_segmentos           = document.getElementById('tablaSegmentos');
+    const table_paginas             = document.getElementById('tablaPaginas');
     const input_tiempoCiclo         = document.getElementById('tiempoCiclo');
     const div_terminal              = document.getElementById('terminal1');
     /*--------------------------------------------------------------------------------------------------------*/
@@ -132,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones,
         sel_opcionesEstrategia, sel_estrategiaGestor, table_memoria, table_estadoMemoria,
         table_procesos, table_fragmentos, input_tiempoCiclo, table_descripcion, table_spec_segmentos,
-        table_dir_logica, table_spec_paginas
+        table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
     ) {
         const generalidades     = extraerGeneralidades(table_generalidades);
         const bits_direccion    = extraerDireccionLogica(table_dir_logica);
@@ -170,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const estrategia_t_fijo         = new Estrategia_t_fijo(particionFija, salida);
         const estrategia_t_variable     = new Estrategia_t_variable(particiones, ajuste_t_variable, salida);
         const estrategia_segmentacion   = new Estrategia_segmentacion(t_b_n_espacios, t_b_offset, salida);
-        const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
+        const estrategia_paginacion     = new Estrategia_paginacion(t_b_n_espacios, t_b_offset, salida);
         
         switch(sel_estrategiaGestor.value) {
             case 'ETF': gestorMemoria.estrategia_gestor = estrategia_t_fijo; break;
@@ -186,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         limpiarGUI(
             table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion, table_spec_segmentos,
-            table_spec_paginas
+            table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
         );
         salida.calcularGeneralidades(table_generalidades);
         salida.calcular_t_disco(table_programa);
@@ -197,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function limpiarGUI(
         table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
-        table_spec_segmentos, table_spec_paginas
+        table_spec_segmentos, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
     ) {
         while (table_memoria.rows.length > 1) {
             table_memoria.deleteRow(1);
@@ -226,12 +229,22 @@ document.addEventListener("DOMContentLoaded", function () {
         while (table_spec_paginas.rows.length > 1) {
             table_spec_paginas.deleteRow(1);
         }
+
+        while (table_segmentos.rows.length > 1) {
+            table_segmentos.deleteRow(1);
+        }
+
+        while (table_paginas.rows.length > 1) {
+            table_paginas.deleteRow(1);
+        }
+
+        sel_n_proceso.innerHTML = '';
     }
 
     /*--------------------------------------------------------------------------------------------------------*/
     const salida = new Salida([
         table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, div_terminal, table_descripcion, 
-        table_spec_segmentos, table_spec_paginas
+        table_spec_segmentos, table_spec_paginas, sel_n_proceso
     ]);
     /*--------------------------------------------------------------------------------------------------------*/
     bt_agregarPrograma.addEventListener('click', () => salida.agregarPrograma(table_programa, table_tiemposProcesos));
@@ -241,10 +254,12 @@ document.addEventListener("DOMContentLoaded", function () {
     bt_eliminarTiempo.addEventListener('click', () => salida.eliminarTiempo(table_tiemposProcesos));
     bt_eliminarParticion.addEventListener('click', () => salida.eliminarParticion(table_particiones));
     sel_estrategiaGestor.addEventListener('change', () => salida.opcionesEstrategia(sel_estrategiaGestor, sel_opcionesEstrategia));
+    sel_n_proceso.addEventListener('change', () => salida.detallesProceso(sel_n_proceso, table_segmentos, table_paginas));
 
     bt_ejecutarPrograma.addEventListener('click', () => ejecutarPrograma(
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones, sel_opcionesEstrategia,
         sel_estrategiaGestor, table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, input_tiempoCiclo,
-        table_descripcion, table_spec_segmentos, table_dir_logica, table_spec_paginas
+        table_descripcion, table_spec_segmentos, table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos,
+        table_paginas
     ));
 })

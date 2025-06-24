@@ -12,6 +12,8 @@ const reloj = {
 
 export class SO {
     static BYTES_EN_1KiB = 1024;
+    static i_marcoDEC = 0;
+    static i_marcoHEX = 0;
     
     constructor(t_MiB_SO, gestorMemoria, programas, procesos, salida, ms_retardo) {
         this.t_MiB_SO       = t_MiB_SO;
@@ -41,7 +43,53 @@ export class SO {
         this.gestorMemoria.cargarSO(this.t_MiB_SO);
         this.gestorMemoria.particionarMemoria();
         this.primerosDatos();
+        this.contextoEstrategia();
         this.ejecutarProcesos(this.ms_retardo);
+    }
+
+    contextoEstrategia() {
+        this.vaciarContexto();
+
+        if (this.gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion)
+        { this.salida.v_act_estrategia = 'SEG'; }
+        else if (this.gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion) {
+            const tabla         = this.salida.ids[0]; 
+            const filaHeader    = tabla.querySelector('thead tr');
+            const marcoDEC      = document.createElement('th');
+            const marcoHEX      = document.createElement('th');
+
+            marcoDEC.textContent = 'Marco DEC';
+            marcoHEX.textContent = 'Marco HEX';
+
+            filaHeader.appendChild(marcoDEC);
+            filaHeader.appendChild(marcoHEX);
+            
+            this.salida.v_act_estrategia = 'PAG';
+ 
+            SO.i_marcoHEX = filaHeader.cells.length - 1;
+            SO.i_marcoDEC = filaHeader.cells.length - 2;
+        }
+        else
+        { this.salida.v_act_estrategia = ''; }
+    }
+
+    vaciarContexto() {
+        if(SO.i_marcoDEC !== 0 || SO.i_marcoHEX !== 0) {
+            Array.from(this.salida.ids[0].rows).forEach(fila => {
+                if(fila.cells[SO.i_marcoHEX]) {
+                    fila.deleteCell(SO.i_marcoHEX)
+                }
+            });
+
+            Array.from(this.salida.ids[0].rows).forEach(fila => {
+                if(fila.cells[SO.i_marcoDEC]) {
+                    fila.deleteCell(SO.i_marcoDEC)
+                }
+            });
+        }
+
+        SO.i_marcoHEX = 0;
+        SO.i_marcoDEC = 0;
     }
 
     async ejecutarProcesos(ms) {
@@ -72,6 +120,10 @@ export class SO {
             this.gestorMemoria.procesos = procesosCrear;
             this.gestorMemoria.gestionarMemoriaProcesos();
             reloj.ciclo(this.tick);
+
+            this.salida.v_act_memoria   = this.gestorMemoria.memoria.c_ram;
+            this.salida.v_act_dirDEC    = this.gestorMemoria.memoria.get_pos_c_ram('DEC');
+            this.salida.v_act_dirHEX    = this.gestorMemoria.memoria.get_pos_c_ram('HEX');
 
             this.actualizarInterfaz(procesosCrear);
             console.log(this.gestorMemoria.memoria.c_ram);
@@ -140,11 +192,19 @@ export class SO {
             this.salida.tablaSpecSegmentos(
                 this.gestorMemoria.memoria.c_ram
             );
+
+            this.salida.opcionesProcesos(
+                procesosCrear
+            );
         }
 
         if(this.gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion) {
             this.salida.tablaSpecPaginas(
                 this.gestorMemoria.memoria.c_ram
+            );
+
+            this.salida.opcionesProcesos(
+                procesosCrear
             );
         }
     }

@@ -49,13 +49,13 @@ export class Estrategia_paginacion {
                 if(proceso.turno === 0)
                 { this.salida.interfazWeb(`ℹ️ [INFO] Los segmentos del proceso con PID ${proceso.pid} continúan en la memoria`); }
                 else
-                { memoria = this.insertarProcesoMemoria(memoria, proceso); }
+                { memoria = this.paginarProceso(memoria, proceso); }
             });
 
         return memoria.c_ram;
     }
 
-    insertarProcesoMemoria(memoria, proceso) {
+    paginarProceso(memoria, proceso) {
         console.log(proceso);
         let i_pagina = 0;
 

@@ -53,6 +53,10 @@ export class Test_Salida {
         
     }
 
+    opcionesProcesos(procesosActuales) {
+
+    }
+
     interfazWeb(message) {
         console.log(message);
     }

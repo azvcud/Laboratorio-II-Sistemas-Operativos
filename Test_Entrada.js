@@ -47,7 +47,7 @@ const estrategia_segmentacion   = new Estrategia_segmentacion(5, 19, salida);
 const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
 
 estrategia_dinamica.b_compactacion = false;
-gestorMemoria.estrategia_gestor = estrategia_paginacion;
+gestorMemoria.estrategia_gestor = estrategia_segmentacion;
 
 const windows = new SO(1, gestorMemoria, programas, procesos, salida, 500);
 windows.encender();
