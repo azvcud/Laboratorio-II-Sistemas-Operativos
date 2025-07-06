@@ -10,7 +10,54 @@ export class Salida {
         this._v_act_dirDEC      = [];
         this._v_act_dirHEX      = [];
         this._v_act_estrategia  = '';
+        this.i_marcoHEX         = 0;
+        this.i_marcoDEC         = 0;
         this.estado_anterior    = [[-1, -1, -1, -1, -1, -1, -1, -1]];
+    }
+
+    contextoEstrategia(esSegmentacion, esPaginacion) {
+
+        if (esSegmentacion)
+        { this.v_act_estrategia = 'SEG'; }
+
+        else if (esPaginacion) {
+            const tabla         = this.ids[0]; 
+            const filaHeader    = tabla.querySelector('thead tr');
+            const marcoDEC      = document.createElement('th');
+            const marcoHEX      = document.createElement('th');
+    
+            marcoDEC.textContent = 'Marco DEC';
+            marcoHEX.textContent = 'Marco HEX';
+    
+            filaHeader.appendChild(marcoDEC);
+            filaHeader.appendChild(marcoHEX);
+                
+            this.v_act_estrategia = 'PAG';
+     
+            this.i_marcoHEX = filaHeader.cells.length - 1;
+            this.i_marcoDEC = filaHeader.cells.length - 2;
+        }
+        else
+        { this.v_act_estrategia = '';}
+    }
+
+    vaciarContexto() {
+        if(this.i_marcoDEC !== 0 || this.i_marcoHEX !== 0) {
+            Array.from(this.ids[0].rows).forEach(fila => {
+                if(fila.cells[this.i_marcoHEX]) {
+                    fila.deleteCell(this.i_marcoHEX)
+                }
+            });
+
+            Array.from(this.ids[0].rows).forEach(fila => {
+                if(fila.cells[this.i_marcoDEC]) {
+                    fila.deleteCell(this.i_marcoDEC)
+                }
+            });
+        }
+
+        this.i_marcoHEX = 0;
+        this.i_marcoDEC = 0;
     }
 
     agregarPrograma(table_programa, table_tiemposProcesos) {

@@ -3,6 +3,12 @@ export class Test_Salida {
         this.ids = ids;
     }
 
+    vaciarContexto() {
+    }
+
+    contextoEstrategia(esSegmentacion, esPaginacion) {
+    }
+
     agregarPrograma(table_programa, table_tiemposProcesos) {
     }
 
@@ -11,7 +17,7 @@ export class Test_Salida {
 
     agregarParticion(table_particiones) {
     }
-
+8
     eliminarPrograma(table_programa, table_tiemposProcesos) {
     }
 

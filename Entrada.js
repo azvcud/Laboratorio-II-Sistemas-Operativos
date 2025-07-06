@@ -272,44 +272,20 @@ document.addEventListener("DOMContentLoaded", function () {
         table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
         table_spec_segmentos, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
     ) {
-        while (table_memoria.rows.length > 1) {
-            table_memoria.deleteRow(1);
-        }
+        const tablas = [
+            table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
+            table_spec_segmentos, table_spec_paginas, table_segmentos, table_paginas
+        ];
 
-        while (table_estadoMemoria.rows.length > 1) {
-            table_estadoMemoria.deleteRow(1);
-        }
-
-        while (table_procesos.rows.length > 1) {
-            table_procesos.deleteRow(1);
-        }
-
-        while (table_fragmentos.rows.length > 1) {
-            table_fragmentos.deleteRow(1);
-        }
-
-        while (table_descripcion.rows.length > 1) {
-            table_descripcion.deleteRow(1);
-        }
-
-        while (table_spec_segmentos.rows.length > 1) {
-            table_spec_segmentos.deleteRow(1);
-        }
-
-        while (table_spec_paginas.rows.length > 1) {
-            table_spec_paginas.deleteRow(1);
-        }
-
-        while (table_segmentos.rows.length > 1) {
-            table_segmentos.deleteRow(1);
-        }
-
-        while (table_paginas.rows.length > 1) {
-            table_paginas.deleteRow(1);
-        }
+        tablas.forEach(tabla => {
+            while (tabla.rows.length > 1) {
+                tabla.deleteRow(1);
+            }
+        });
 
         sel_n_proceso.innerHTML = '';
     }
+
 
     /*--------------------------------------------------------------------------------------------------------*/
     const salida = new Salida([

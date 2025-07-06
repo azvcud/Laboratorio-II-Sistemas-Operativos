@@ -8,6 +8,7 @@ import { Estrategia_dinamica } from './Estrategia_dinamica.js';
 import { Estrategia_paginacion } from './Estrategia_paginacion.js';
 import { GestorMemoria } from './GestorMemoria.js';
 import { Test_Salida } from './Test_salida.js';
+import { Estrategia_segmentacion_paginada } from './Estrategia_segmentacion_paginada.js';
 
 const programas = [
     Programa.bind(null, 'Notepad', 19524, 12352, 1165),
@@ -46,8 +47,10 @@ const estrategia_dinamica       = new Estrategia_dinamica('mejor', salida);
 const estrategia_segmentacion   = new Estrategia_segmentacion(5, 19, salida);
 const estrategia_paginacion     = new Estrategia_paginacion(16, 16, salida);
 
+const estrategia_segmentacion_paginada = new Estrategia_segmentacion_paginada(5, 3, 16, salida);
+
 estrategia_dinamica.b_compactacion = false;
-gestorMemoria.estrategia_gestor = estrategia_paginacion;
+gestorMemoria.estrategia_gestor = estrategia_segmentacion_paginada;
 
 const windows = new SO(1, gestorMemoria, programas, procesos, salida, 500);
 windows.encender();

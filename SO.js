@@ -12,8 +12,6 @@ const reloj = {
 
 export class SO {
     static BYTES_EN_1KiB = 1024;
-    static i_marcoDEC = 0;
-    static i_marcoHEX = 0;
     
     constructor(t_MiB_SO, gestorMemoria, programas, procesos, salida, ms_retardo) {
         this.t_MiB_SO       = t_MiB_SO;
@@ -40,56 +38,17 @@ export class SO {
     }
 
     encender() {
+        const esSegmentacion    = this._gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion;
+        const esPaginacion      = this._gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion;
+
         this._gestorMemoria.cargarSO(this.t_MiB_SO);
         this._gestorMemoria.particionarMemoria();
         this.primerosDatos();
-        this.contextoEstrategia();
+
+        this.salida.vaciarContexto();
+        this.salida.contextoEstrategia(esSegmentacion, esPaginacion);
+
         this.ejecutarProcesos(this.ms_retardo);
-    }
-
-    contextoEstrategia() {
-        this.vaciarContexto();
-
-        if (this._gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion)
-        { this.salida.v_act_estrategia = 'SEG'; }
-        else if (this._gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion) {
-            const tabla         = this.salida.ids[0]; 
-            const filaHeader    = tabla.querySelector('thead tr');
-            const marcoDEC      = document.createElement('th');
-            const marcoHEX      = document.createElement('th');
-
-            marcoDEC.textContent = 'Marco DEC';
-            marcoHEX.textContent = 'Marco HEX';
-
-            filaHeader.appendChild(marcoDEC);
-            filaHeader.appendChild(marcoHEX);
-            
-            this.salida.v_act_estrategia = 'PAG';
- 
-            SO.i_marcoHEX = filaHeader.cells.length - 1;
-            SO.i_marcoDEC = filaHeader.cells.length - 2;
-        }
-        else
-        { this.salida.v_act_estrategia = ''; }
-    }
-
-    vaciarContexto() {
-        if(SO.i_marcoDEC !== 0 || SO.i_marcoHEX !== 0) {
-            Array.from(this.salida.ids[0].rows).forEach(fila => {
-                if(fila.cells[SO.i_marcoHEX]) {
-                    fila.deleteCell(SO.i_marcoHEX)
-                }
-            });
-
-            Array.from(this.salida.ids[0].rows).forEach(fila => {
-                if(fila.cells[SO.i_marcoDEC]) {
-                    fila.deleteCell(SO.i_marcoDEC)
-                }
-            });
-        }
-
-        SO.i_marcoHEX = 0;
-        SO.i_marcoDEC = 0;
     }
 
     async ejecutarProcesos(ms) {
