@@ -55,6 +55,10 @@ export class Test_Salida {
         
     }
 
+    tablaSpecSegmentos_SPG(segmentos) {
+        
+    }
+
     tablaSpecPaginas(paginas) {
         
     }

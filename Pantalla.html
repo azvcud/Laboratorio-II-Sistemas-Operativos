@@ -12,7 +12,7 @@
         <div class="terminal-wrapper">
             <!-- COLUMNA IZQUIERDA: terminal + bottom panel -->
             <div class="left-column">
-              <div class="bottom-panel">
+              <div class="left-bottom-panel">
                 <p>Generalidades del sistema operativo:</p>
                 <table class="log-table" id="tablaGeneralidades">
                   <thead>
@@ -67,9 +67,9 @@
                     <tr>
                       <th>Nombre</th>
                       <th>Tamaño en disco</th>
-                      <th>Tamaño de código</th>
-                      <th>Tamaño de datos inicializados</th>
-                      <th>Tamaños de datos sin inicializar</th>
+                      <th>Tamaño de .txt</th>
+                      <th>Tamaño de .data</th>
+                      <th>Tamaños de .bss</th>
                     </tr>
                   </thead>
                     <tr>
@@ -223,7 +223,7 @@
                 <button id="eliminarTiempo">Eliminar tiempo</button>
               </div>
 
-              <div class="bottom-panel">
+              <div class="left-bottom-panel">
                 <p>Particiones:</p>
                 <table class="log-table" id="tablaParticiones">
                   <thead>
@@ -258,6 +258,21 @@
                       <td contenteditable="true">19</td>
                     </tr>
                 </table>
+                <p>Dirección lógica de segmentación paginada:</p>
+                <table class="log-table" id="tablaDirLogica3">
+                  <thead>
+                    <tr>
+                      <th>N° segmentos (b)</th>
+                      <th>N° páginas (b)</th>
+                      <th>Offset (b)</th>
+                    </tr>
+                  </thead>
+                    <tr>
+                      <td contenteditable="true">5</td>
+                      <td contenteditable="true">3</td>
+                      <td contenteditable="true">16</td>
+                    </tr>
+                </table>
               </div>
 
             </div>
@@ -275,6 +290,7 @@
                     <option value="DIN">Particiones dinámicas</option>
                     <option value="SEG">Segmentación de memoria</option>
                     <option value="PAG">Paginación de memoria</option>
+                    <option value="SPG">Segmentación paginada</option>
                   </select>
 
                   <label for="opcionesEstrategia">Opciones de estrategia:</label>
@@ -339,7 +355,7 @@
           </div>
         <div class="terminal-body" id="terminal1"></div>
        </div>
-              <div class="bottom-panel">
+              <div class="right-bottom-panel">
                 <p>Lista de procesos:</p>
                 <table class="log-table" id="tablaProcesos">
                   <thead>
@@ -402,7 +418,7 @@
                   </thead>
                 </table>
               </div>
-            <div class="bottom-panel">
+            <div class="right-bottom-panel">
               <div class="input-group">
                 <label for="numeroProceso">Proceso:</label>
                   <select id="numeroProceso">
@@ -425,6 +441,12 @@
                     </tr>
                   </thead>
                 </table>
+              </div>
+
+              <div class="input-group">
+                <label for="numeroSegmento">Segmento:</label>
+                  <select id="numeroSegmento">
+                  </select>
               </div>
 
               <p>Tabla de páginas:</p>

@@ -1,6 +1,7 @@
 import { Estrategia_dinamica } from './Estrategia_dinamica.js';
 import { Estrategia_paginacion } from './Estrategia_paginacion.js';
 import { Estrategia_segmentacion } from './Estrategia_segmentacion.js';
+import { Estrategia_segmentacion_paginada } from './Estrategia_segmentacion_paginada.js';
 import { Estrategia_t_fijo } from './Estrategia_t_fijo.js';
 import { Estrategia_t_variable } from './Estrategia_t_variable.js';
 import { Proceso } from './Proceso.js';
@@ -40,13 +41,15 @@ export class SO {
     encender() {
         const esSegmentacion    = this._gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion;
         const esPaginacion      = this._gestorMemoria.estrategia_gestor instanceof Estrategia_paginacion;
+        
+        const esSegmentacionPaginada = this._gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion_paginada;
 
         this._gestorMemoria.cargarSO(this.t_MiB_SO);
         this._gestorMemoria.particionarMemoria();
         this.primerosDatos();
 
         this.salida.vaciarContexto();
-        this.salida.contextoEstrategia(esSegmentacion, esPaginacion);
+        this.salida.contextoEstrategia(esSegmentacion, esPaginacion, esSegmentacionPaginada);
 
         this.ejecutarProcesos(this.ms_retardo);
     }
@@ -170,6 +173,20 @@ export class SO {
             this.salida.opcionesProcesos(
                 procesosCrear
             );
+        }
+
+        if(this._gestorMemoria.estrategia_gestor instanceof Estrategia_segmentacion_paginada) {
+            this.salida.tablaSpecSegmentos_SPG(
+                this._gestorMemoria.memoria.c_ram
+            );
+
+            this.salida.opcionesProcesos(
+                procesosCrear
+            )
+
+            this.salida.tablaSpecPaginas(
+                this._gestorMemoria.memoria.c_ram
+            )
         }
     }
 

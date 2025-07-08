@@ -8,6 +8,7 @@ import { GestorMemoria } from './GestorMemoria.js';
 import { Salida } from './Salida.js';
 import { Estrategia_segmentacion } from './Estrategia_segmentacion.js';
 import { Estrategia_paginacion } from './Estrategia_paginacion.js';
+import { Estrategia_segmentacion_paginada } from './Estrategia_segmentacion_paginada.js';
 
 document.addEventListener("DOMContentLoaded", function () {
     const bt_ejecutarPrograma       = document.getElementById('ejecutar');
@@ -22,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const sel_programasEjecutar     = document.getElementById('programasEjecutar');
     const sel_programasCerrar       = document.getElementById('programasCerrar');
     const sel_n_proceso             = document.getElementById('numeroProceso');
+    const sel_n_segmento            = document.getElementById('numeroSegmento');
     const table_programa            = document.getElementById('tablaProgramas');
     const table_tiemposProcesos     = document.getElementById('tablaTiemposProcesos');
     const table_particiones         = document.getElementById('tablaParticiones');
@@ -34,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const table_spec_segmentos      = document.getElementById('tablaSpecSegmentos');
     const table_spec_paginas        = document.getElementById('tablaSpecPaginas');
     const table_dir_logica          = document.getElementById('tablaDirLogica');
+    const table_dir_logica3         = document.getElementById('tablaDirLogica3');
     const table_segmentos           = document.getElementById('tablaSegmentos');
     const table_paginas             = document.getElementById('tablaPaginas');
     const input_tiempoCiclo         = document.getElementById('tiempoCiclo');
@@ -134,6 +137,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return [n_espacios, offset];
     }
 
+    function extraerDireccionLogica3(table_dir_logica3) {
+        const fila = table_dir_logica3.querySelector("tbody tr");
+
+        const [n_segmentosCelda, n_paginasCelda, offsetCelda] = fila.querySelectorAll("td"); 
+
+        const n_segmentos   = parseInt(n_segmentosCelda.textContent.trim(), 10);
+        const n_paginas     = parseInt(n_paginasCelda.textContent.trim(), 10);
+        const offset        = parseInt(offsetCelda.textContent.trim(), 10);
+
+        return [n_segmentos, n_paginas, offset];
+    }
+
     function opcionesProgramas(programas, sel_programasEjecutar, sel_programasCerrar) {
         sel_programasEjecutar.innerHTML = '';
         sel_programasCerrar.innerHTML = '';
@@ -191,10 +206,12 @@ document.addEventListener("DOMContentLoaded", function () {
         sel_opcionesEstrategia, sel_estrategiaGestor, table_memoria, table_estadoMemoria,
         table_procesos, table_fragmentos, input_tiempoCiclo, table_descripcion, table_spec_segmentos,
         table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas,
-        checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar
+        checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar, table_dir_logica3,
+        sel_n_segmento
     ) {
         const generalidades     = extraerGeneralidades(table_generalidades);
         const bits_direccion    = extraerDireccionLogica(table_dir_logica);
+        const bits_direccion_3  = extraerDireccionLogica3(table_dir_logica3);
 
         const t_MiB_ram     = generalidades[0];
         const t_KiB_stack   = generalidades[1];
@@ -205,6 +222,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const t_b_n_espacios = bits_direccion[0];
         const t_b_offset     = bits_direccion[1];
+
+        const t_b_n_segmentos   = bits_direccion_3[0];
+        const t_b_n_paginas     = bits_direccion_3[1];
+        const t_b_offset3       = bits_direccion_3[2];
 
         const ms_retardo        = input_tiempoCiclo.value;
         const ejecucionManual   = checkbox_ejecucion.checked;
@@ -233,12 +254,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const estrategia_segmentacion   = new Estrategia_segmentacion(t_b_n_espacios, t_b_offset, salida);
         const estrategia_paginacion     = new Estrategia_paginacion(t_b_n_espacios, t_b_offset, salida);
         
+        const estrategia_segmentacion_paginada = new Estrategia_segmentacion_paginada(t_b_n_segmentos, t_b_n_paginas, t_b_offset3, salida); 
+        
         switch(sel_estrategiaGestor.value) {
             case 'ETF': gestorMemoria.estrategia_gestor = estrategia_t_fijo; break;
             case 'ETV': gestorMemoria.estrategia_gestor = estrategia_t_variable; break;
             case 'DIN': gestorMemoria.estrategia_gestor = estrategia_dinamica; break;
             case 'SEG': gestorMemoria.estrategia_gestor = estrategia_segmentacion; break;
             case 'PAG': gestorMemoria.estrategia_gestor = estrategia_paginacion; break;
+            case 'SPG': gestorMemoria.estrategia_gestor = estrategia_segmentacion_paginada; break;
 
             default: gestorMemoria.estrategia_gestor = estrategia_t_fijo; break;
         }
@@ -256,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         limpiarGUI(
             table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion, table_spec_segmentos,
-            table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
+            table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas, sel_n_segmento
         );
 
         opcionesProgramas(windows.programas, sel_programasEjecutar, sel_programasCerrar);
@@ -270,7 +294,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function limpiarGUI(
         table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
-        table_spec_segmentos, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas
+        table_spec_segmentos, table_spec_paginas, sel_n_proceso, table_segmentos, table_paginas,
+        sel_n_segmento
     ) {
         const tablas = [
             table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, table_descripcion,
@@ -283,14 +308,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        sel_n_proceso.innerHTML = '';
+        sel_n_proceso.innerHTML  = '';
+        sel_n_segmento.innerHTML = '';
     }
 
 
     /*--------------------------------------------------------------------------------------------------------*/
     const salida = new Salida([
         table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, div_terminal, table_descripcion, 
-        table_spec_segmentos, table_spec_paginas, sel_n_proceso
+        table_spec_segmentos, table_spec_paginas, sel_n_proceso, sel_n_segmento
     ]);
     /*--------------------------------------------------------------------------------------------------------*/
     bt_agregarPrograma.addEventListener('click', () => salida.agregarPrograma(table_programa, table_tiemposProcesos));
@@ -300,6 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bt_eliminarTiempo.addEventListener('click', () => salida.eliminarTiempo(table_tiemposProcesos));
     bt_eliminarParticion.addEventListener('click', () => salida.eliminarParticion(table_particiones));
     sel_n_proceso.addEventListener('change', () => salida.detallesProceso(sel_n_proceso, table_segmentos, table_paginas));
+    sel_n_segmento.addEventListener('change', () => salida.detallesSegmento(sel_n_proceso, sel_n_segmento, table_paginas));
 
     sel_estrategiaGestor.addEventListener('change', () => {
         salida.opcionesEstrategia(sel_estrategiaGestor, sel_opcionesEstrategia);
@@ -310,6 +337,6 @@ document.addEventListener("DOMContentLoaded", function () {
         salida, table_generalidades, table_programa, table_tiemposProcesos, table_particiones, sel_opcionesEstrategia,
         sel_estrategiaGestor, table_memoria, table_estadoMemoria, table_procesos, table_fragmentos, input_tiempoCiclo,
         table_descripcion, table_spec_segmentos, table_dir_logica, table_spec_paginas, sel_n_proceso, table_segmentos,
-        table_paginas, checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar
+        table_paginas, checkbox_ejecucion, sel_programasEjecutar, sel_programasCerrar, table_dir_logica3, sel_n_segmento
     ));
 })

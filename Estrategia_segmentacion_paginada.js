@@ -114,8 +114,7 @@ export class Estrategia_segmentacion_paginada {
                 const c_segmento = et_segmentos[i_c_segmento];
 
                 proc_segmentado.push({
-                    i_c_segmento    : i_c_segmento + 1,
-                    i_segmento      : i_segmento + 1,
+                    i_segmento      : i_segmento,
                     t_segmento      : t_segmento,
                     c_segmento      : c_segmento,
                     pid: pid
@@ -126,8 +125,8 @@ export class Estrategia_segmentacion_paginada {
             }
 
             i_c_segmento += 1;
-            i_segmento = 0;
         }
+        i_segmento = 0;
         
         return proc_segmentado;
     }
@@ -150,7 +149,6 @@ export class Estrategia_segmentacion_paginada {
 
             ct_paginado_segmento.push({
                 pid             : segmento.pid,
-                i_c_segmento    : segmento.i_c_segmento,
                 i_segmento      : segmento.i_segmento,
                 i_pagina        : i + 1,
                 t_pagina        : this.B_t_pagina,

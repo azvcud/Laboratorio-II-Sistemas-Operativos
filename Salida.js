@@ -9,18 +9,19 @@ export class Salida {
         this._v_act_memoria     = [];
         this._v_act_dirDEC      = [];
         this._v_act_dirHEX      = [];
-        this._v_act_estrategia  = '';
+        this.v_act_estrategia   = '';
         this.i_marcoHEX         = 0;
         this.i_marcoDEC         = 0;
+        this.i_th_segmento      = 0;
         this.estado_anterior    = [[-1, -1, -1, -1, -1, -1, -1, -1]];
     }
 
-    contextoEstrategia(esSegmentacion, esPaginacion) {
+    contextoEstrategia(esSegmentacion, esPaginacion, esSegmentacionPaginada) {
 
         if (esSegmentacion)
         { this.v_act_estrategia = 'SEG'; }
 
-        else if (esPaginacion) {
+        else if (esPaginacion || esSegmentacionPaginada) {
             const tabla         = this.ids[0]; 
             const filaHeader    = tabla.querySelector('thead tr');
             const marcoDEC      = document.createElement('th');
@@ -32,10 +33,24 @@ export class Salida {
             filaHeader.appendChild(marcoDEC);
             filaHeader.appendChild(marcoHEX);
                 
-            this.v_act_estrategia = 'PAG';
-     
-            this.i_marcoHEX = filaHeader.cells.length - 1;
-            this.i_marcoDEC = filaHeader.cells.length - 2;
+            if(esSegmentacionPaginada) {
+                const segmento = document.createElement('th');
+                segmento.textContent = 'Segmento';
+
+                filaHeader.appendChild(segmento);
+
+                this.v_act_estrategia = 'SPG';
+
+                this.i_th_segmento = filaHeader.cells.length - 1;
+                this.i_marcoHEX = filaHeader.cells.length - 2;
+                this.i_marcoDEC = filaHeader.cells.length - 3;
+            }
+            else
+            {
+                this.i_marcoHEX = filaHeader.cells.length - 1;
+                this.i_marcoDEC = filaHeader.cells.length - 2;
+                this.v_act_estrategia = 'PAG'; 
+            }
         }
         else
         { this.v_act_estrategia = '';}
@@ -43,21 +58,31 @@ export class Salida {
 
     vaciarContexto() {
         if(this.i_marcoDEC !== 0 || this.i_marcoHEX !== 0) {
+
+            if(this.i_th_segmento !== 0) {
+                Array.from(this.ids[0].rows).forEach(fila => {
+                    if(fila.cells[this.i_th_segmento]) {
+                        fila.deleteCell(this.i_th_segmento);
+                    }
+                })
+            }
+
             Array.from(this.ids[0].rows).forEach(fila => {
                 if(fila.cells[this.i_marcoHEX]) {
-                    fila.deleteCell(this.i_marcoHEX)
+                    fila.deleteCell(this.i_marcoHEX);
                 }
             });
 
             Array.from(this.ids[0].rows).forEach(fila => {
                 if(fila.cells[this.i_marcoDEC]) {
-                    fila.deleteCell(this.i_marcoDEC)
+                    fila.deleteCell(this.i_marcoDEC);
                 }
             });
         }
 
-        this.i_marcoHEX = 0;
-        this.i_marcoDEC = 0;
+        this.i_marcoHEX     = 0;
+        this.i_marcoDEC     = 0;
+        this.i_th_segmento  = 0;
     }
 
     agregarPrograma(table_programa, table_tiemposProcesos) {
@@ -211,6 +236,7 @@ export class Salida {
             tabla.deleteRow(1);
         }
 
+        let salto_marco = 0;
         for (let i = 0; i < particiones.length; i++) {
             const [tam, contenido] = particiones[i];
             const hexInicio = rangosHex[i];
@@ -230,11 +256,13 @@ export class Salida {
             } else if (contenido && typeof contenido === 'object' && 'pid' in contenido) {
                 nombreProceso = `p${contenido.pid}`;
 
-                if(this._v_act_estrategia === 'SEG') 
+                if(this.v_act_estrategia === 'SEG') 
                 { nombreProceso = nombreProceso + ` (${contenido.c_segmento})`}
-                if(this._v_act_estrategia === 'PAG') 
+                if(this.v_act_estrategia === 'PAG' || this.v_act_estrategia === 'SPG') 
                 { nombreProceso = nombreProceso + ` (${contenido.c_pagina})`}
             }
+
+            console.log(contenido);
 
             const fila = tabla.insertRow();
             fila.insertCell().textContent = `${hexInicio} - ${hexFin}`;
@@ -242,9 +270,63 @@ export class Salida {
             fila.insertCell().textContent = nombreProceso;
             fila.insertCell().textContent = tam;
 
-            if(this._v_act_estrategia === 'PAG') {
+            if(this.v_act_estrategia === 'PAG') {
                 fila.insertCell().textContent = i;
                 fila.insertCell().textContent = i.toString(16);
+            }
+
+            if(this.v_act_estrategia === 'SPG') {
+                if(!contenido) {
+                    const t_pagina  = parseInt(tabla.rows[i].cells[3].textContent.trim(), 10);
+                    const t_libre   = parseInt(tabla.rows[i+1].cells[3].textContent.trim(), 10);
+
+                    const ca_saltos = Math.ceil(t_libre / t_pagina);
+                    salto_marco = salto_marco + ca_saltos - 1;
+
+                    fila.insertCell().textContent = '';
+                    fila.insertCell().textContent = '';
+                }
+                else
+                {
+                    fila.insertCell().textContent = i + salto_marco;
+                    fila.insertCell().textContent = (i + salto_marco).toString(16);
+                }
+
+                if(contenido === 'Sistema Operativo')
+                { fila.insertCell().textContent = 'Segmento de SO'; }
+                else if(contenido)
+                { fila.insertCell().textContent = `p${contenido.pid} (seg` + contenido.i_segmento + ')'; }
+                else
+                { fila.insertCell().textContent = ''; }
+            }
+        }
+
+        if(this.v_act_estrategia === 'SPG')
+        { this.combinarSegmentos(); }
+    }
+
+    combinarSegmentos() {
+        const i_th_segmento = 6; //El sexto en el <th> del primer <tr> (Segmento) 
+        const tabla         = this._ids[0];
+        let filas           = Array.from(tabla.rows).slice(1);
+
+        let valorAnterior   = null;
+        let celdaPrincipal  = null;
+        let co_combinacion  = 1;
+        
+        for (let i = 0; i < filas.length; i++) {
+            const celda = filas[i].cells[i_th_segmento];
+
+            if(celda.textContent === valorAnterior) {
+                co_combinacion++;
+                celdaPrincipal.rowSpan = co_combinacion;
+                celda.remove();
+            }
+            else
+            {
+                valorAnterior   = celda.textContent;
+                celdaPrincipal  = celda;
+                co_combinacion  = 1;
             }
         }
     }
@@ -423,6 +505,86 @@ export class Salida {
         });
     }
 
+    tablaSpecSegmentos_SPG(segmentos) {
+        const tabla         = this._ids[6];
+        const et_seleccion  = ['.text', '.data', '.bss'];
+
+        while (tabla.rows.length > 1) {
+            tabla.deleteRow(1);
+        }
+
+        const procesos_spec = segmentos
+            .filter(segmento =>
+                typeof segmento[1] === 'object' &&
+                segmento[1] !== null &&
+                et_seleccion.includes(segmento[1].c_pagina) 
+            )
+            .map(([, { pid, i_segmento, c_pagina, t_pa_segmento }]) => [
+                pid,
+                i_segmento,
+                c_pagina,
+                t_pa_segmento
+            ])
+    
+        const limpiar_redundancia_seg = datos => {
+            const mapa = new Map();
+
+            datos.forEach(([pid, i_segmento, c_pagina, t_pa_segmento]) => {
+                const clave = `${pid}-${i_segmento}-${c_pagina}`;
+
+                if (mapa.has(clave)) {
+                    const valorExistente = mapa.get(clave);
+                    valorExistente[3] += t_pa_segmento;
+                } 
+                else 
+                { mapa.set(clave, [pid, i_segmento, c_pagina, t_pa_segmento]); }
+            });
+
+            return Array.from(mapa.values());
+        };
+
+        const resumen_segmentos = (arreglo) => {
+            const secciones = [".text", ".bss", ".data"];
+
+            const resumen = arreglo.reduce((acc, [pid, , c_pagina, t_pa_segmento]) => {
+                if (!acc[pid]) {
+                    acc[pid] = { pid };
+                    for (const sec of secciones) {
+                        acc[pid][sec] = { count: 0, min: Infinity };
+                    }
+                }
+
+                const entry = acc[pid][c_pagina];
+                entry.count += 1;
+                entry.min = Math.min(entry.min, t_pa_segmento);
+
+                return acc;
+            }, {});
+
+            return Object.values(resumen)
+                .sort((a, b) => a.pid - b.pid)
+                .map(({ pid, ...rest }) => [
+                    pid,
+                    ".text", rest[".text"].count, rest[".text"].min,
+                    ".data", rest[".data"].count, rest[".data"].min,
+                    ".bss", rest[".bss"].count, rest[".bss"].min,
+                ]);
+        };
+
+        const segmentos_finales = resumen_segmentos(limpiar_redundancia_seg(procesos_spec));
+        segmentos_finales.forEach(segmento => {
+            const fila = tabla.insertRow();
+
+            fila.insertCell().textContent = segmento[0];
+            fila.insertCell().textContent = segmento[2];
+            fila.insertCell().textContent = segmento[3];
+            fila.insertCell().textContent = segmento[5];
+            fila.insertCell().textContent = segmento[6];
+            fila.insertCell().textContent = segmento[8];
+            fila.insertCell().textContent = segmento[9];
+        })
+    }
+
     tablaSpecPaginas(paginas) {
         const tabla         = this._ids[7];
         const et_seleccion  = ['.text', '.data', '.bss'];
@@ -438,7 +600,7 @@ export class Salida {
                 et_seleccion.includes(pagina[1].c_pagina)
             )
             .reduce((acc_pagina, obj_pagina) => {
-                const { pid, c_pagina: c_pagina, t_segmento: t_segmento } = obj_pagina[1];
+                const { pid, c_pagina: c_pagina } = obj_pagina[1];
 
                 acc_pagina[pid]             = acc_pagina[pid] || {};
                 acc_pagina[pid][c_pagina]   = acc_pagina[pid][c_pagina] || { cantidad: 0 };
@@ -502,7 +664,7 @@ export class Salida {
             table_paginas.deleteRow(1);
         }
 
-        switch(this._v_act_estrategia) {
+        switch(this.v_act_estrategia) {
             case 'SEG':
                 this._v_act_memoria
                     .map((segmento, i) => [i, ...segmento]) 
@@ -535,7 +697,6 @@ export class Salida {
                         fila.insertCell().textContent = permisos;
                         fila.insertCell().textContent = segmento[2].c_segmento;
                     });
-
                 break;
             case 'PAG':
                 this._v_act_memoria
@@ -565,10 +726,129 @@ export class Salida {
                         fila.insertCell().textContent = 'Presente';
                         fila.insertCell().textContent = pagina[2].c_pagina;
                     });
-
+                break;
+            case 'SPG':
+                this.detallesProcesoSPG(v_seleccionado, table_segmentos);
                 break;
             default: break;
         }
+    }
+
+    detallesProcesoSPG(v_seleccionado, table_segmentos) {
+        const selector = this._ids[9];
+        selector.innerHTML = '';
+
+        //Obtención de segmentos
+        const proc_segmentos = Object.values(
+            this._v_act_memoria
+            .map((segmento, i) => [i, ...segmento]) 
+            .filter(segmento => 
+                typeof segmento[2] === 'object' &&
+                segmento[2] !== null &&
+                segmento[2]['pid'] === v_seleccionado
+            )
+            .reduce((acc, [indice, _, meta]) => {
+                const { i_segmento, t_pa_segmento, c_pagina } = meta;
+
+                acc[i_segmento] = acc[i_segmento]
+                ? 
+                {
+                    indice: Math.max(indice, acc[i_segmento].indice),
+                    i_segmento,
+                    t_pa_segmento: acc[i_segmento].t_pa_segmento + t_pa_segmento,
+                    c_pagina
+                }
+                : 
+                { indice, i_segmento, t_pa_segmento, c_pagina };
+
+                return acc;
+            }, {})
+        )
+        .map(({ indice, i_segmento, t_pa_segmento, c_pagina }) => [indice, i_segmento, t_pa_segmento, c_pagina]);
+
+        //Selección de segmentos
+        proc_segmentos.forEach(segmento => {
+            const opcion = document.createElement('option');
+            opcion.value = segmento[1];
+            opcion.text = 'Segmento ' + segmento[1];
+                
+            selector.appendChild(opcion);
+        });
+
+        //Tabla de segmentos
+        proc_segmentos.forEach((segmento, i) => {
+            const permisos = i === 0? 'RX' : 'RW';
+
+            const fila = table_segmentos.insertRow();
+            fila.insertCell().textContent = segmento[1];
+            fila.insertCell().textContent = segmento[1].toString(16);
+            fila.insertCell().textContent = this._v_act_dirDEC[segmento[0]];
+            fila.insertCell().textContent = this._v_act_dirHEX[segmento[0]];
+            fila.insertCell().textContent = segmento[2];
+            fila.insertCell().textContent = segmento[2].toString(16);
+            fila.insertCell().textContent = permisos;
+            fila.insertCell().textContent = segmento[3];
+        });
+        
+        selector.selectedIndex = -1;
+    }
+
+    detallesSegmento(sel_proceso, sel_segmento, table_paginas) {
+        const v_seleccionado_proc   = parseInt(sel_proceso.value);
+        const v_seleccionado_seg    = parseInt(sel_segmento.value);
+        let co_saltos               = 0;
+
+        while (table_paginas.rows.length > 1) {
+            table_paginas.deleteRow(1);
+        }
+
+        const espacios_intermedios = 
+            this._v_act_memoria[this._v_act_memoria.length - 1][1] === null ? 
+                this._v_act_memoria.slice(0, -1) : 
+                this._v_act_memoria;
+        
+        const huecos_libres = espacios_intermedios
+            .map((segmento, i) => [i, ...segmento]) 
+            .filter(segmento => segmento[2] === null) ?? null;
+
+        let t_pagina;
+        if(huecos_libres.length > 0) 
+        { t_pagina = this._v_act_memoria[huecos_libres[0][0] - 1][0]; }
+        else
+        { t_pagina = this._v_act_memoria[this._v_act_memoria.length - 1][0]; }
+
+        const saltos_marco = huecos_libres.map(([marco, t_espacioLibre]) => {
+            const v_prev_marco  = Math.ceil(t_espacioLibre / t_pagina) - 1;
+            const v_final_marco = v_prev_marco + co_saltos;
+            co_saltos = v_final_marco;
+
+            return [marco, v_final_marco];
+        });
+
+        const paginas_seg = this._v_act_memoria
+            .map((segmento, i) => [i, ...segmento]) 
+            .filter(segmento => 
+                typeof segmento[2] === 'object' &&
+                segmento[2] !== null &&
+                segmento[2]['pid'] === v_seleccionado_proc &&
+                segmento[2]['i_segmento'] === v_seleccionado_seg
+            )
+
+        paginas_seg.forEach((pagina, i) => {
+            const fila = table_paginas.insertRow();
+
+            const candidatos_salto = saltos_marco.filter(([marco]) => marco <= pagina[0]) ?? null;
+            const salto_marco = candidatos_salto.length > 0
+                ? candidatos_salto.reduce((acc, curr) => curr[0] > acc[0] ? curr : acc)[1]
+                : 0;
+
+            fila.insertCell().textContent = i;
+            fila.insertCell().textContent = i.toString(16);
+            fila.insertCell().textContent = pagina[0] + salto_marco;
+            fila.insertCell().textContent = (pagina[0] + salto_marco).toString(16);
+            fila.insertCell().textContent = 'Presente';
+            fila.insertCell().textContent = pagina[2].c_pagina;
+        })
     }
 
     interfazWeb(message) {
@@ -606,7 +886,6 @@ export class Salida {
     get ids()               { return this._ids; }
 
     set v_act_memoria(v_act_memoria)        { this._v_act_memoria = v_act_memoria; }
-    set v_act_estrategia(v_act_estrategia)  { this._v_act_estrategia = v_act_estrategia; }
     set v_act_dirDEC(v_act_dirDEC)          { this._v_act_dirDEC = v_act_dirDEC; }
     set v_act_dirHEX(v_act_dirHEX)          { this._v_act_dirHEX = v_act_dirHEX; }
 }
